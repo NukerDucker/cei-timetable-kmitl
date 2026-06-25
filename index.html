@@ -27,7 +27,7 @@
     padding: 64px 24px;
   }
   .wrap { max-width: 900px; margin: 0 auto; }
-  header { margin-bottom: 48px; }
+  header { margin-bottom: 32px; }
   h1 {
     font-family: 'Poppins', Arial, sans-serif;
     font-weight: 600;
@@ -38,6 +38,31 @@
   .sub {
     color: var(--mid);
     font-size: 0.95rem;
+  }
+  /* --- tab bar --- */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 48px;
+    margin-top: 24px;
+  }
+  .tab-btn {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.88rem;
+    padding: 7px 20px;
+    border-radius: 99px;
+    border: 1.5px solid var(--lightgray);
+    background: transparent;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { border-color: var(--orange); color: var(--dark); }
+  .tab-btn.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: var(--light);
   }
   h2 {
     font-family: 'Poppins', Arial, sans-serif;
@@ -111,7 +136,6 @@
   .grid {
     display: grid;
     grid-template-columns: 68px repeat(5, minmax(128px, 1fr));
-    grid-template-rows: 50px repeat(21, 32px);
     min-width: 780px;
     font-family: 'Poppins', Arial, sans-serif;
   }
@@ -123,9 +147,7 @@
     border-bottom: 2px solid var(--dark);
   }
   .g-col {
-    grid-row: 2 / span 21;
     border-right: 1px solid var(--lightgray);
-    background: repeating-linear-gradient(var(--light) 0 25px, var(--lightgray) 25px 26px);
   }
   .g-col.first { border-left: 1px solid var(--lightgray); }
   .g-time {
@@ -165,10 +187,18 @@
     border-radius: 99px;
     background: rgba(250,249,245,0.25);
   }
+  .g-block .break-line {
+    display: block;
+    margin: 3px -8px;
+    border-top: 1px dashed rgba(250,249,245,0.4);
+  }
   .bg-orange { background: var(--orange); }
   .bg-blue   { background: var(--blue); }
   .bg-green  { background: var(--green); }
   .bg-dark   { background: var(--dark); }
+
+  .exam-date { font-weight: 500; }
+  .exam-time { display: block; color: var(--mid); font-size: 0.82rem; }
 
   @media (max-width: 640px) {
     body { padding: 32px 12px; }
@@ -181,63 +211,14 @@
 <div class="wrap">
   <header>
     <h1>Semester Schedule 2026</h1>
-    <p class="sub">Computer Engineering (International) &middot; KMITL</p>
+    <p class="sub" id="subtitle">Computer Engineering (International) &middot; KMITL</p>
   </header>
+
+  <div class="tabs" id="tabs"></div>
 
   <h2>Weekly Timetable</h2>
   <div class="grid-wrap">
-    <div class="grid">
-      <!-- header -->
-      <div class="g-head" style="grid-column:1">Time</div>
-      <div class="g-head" style="grid-column:2">Mon</div>
-      <div class="g-head" style="grid-column:3">Tue</div>
-      <div class="g-head" style="grid-column:4">Wed</div>
-      <div class="g-head" style="grid-column:5">Thu</div>
-      <div class="g-head" style="grid-column:6">Fri</div>
-
-      <!-- day column backgrounds (grid lines) -->
-      <div class="g-col first" style="grid-column:2"></div>
-      <div class="g-col" style="grid-column:3"></div>
-      <div class="g-col" style="grid-column:4"></div>
-      <div class="g-col" style="grid-column:5"></div>
-      <div class="g-col" style="grid-column:6"></div>
-
-      <!-- time labels (30-min lines) -->
-      <div class="g-time" style="grid-row:2">09:00</div>
-      <div class="g-time" style="grid-row:3">09:30</div>
-      <div class="g-time" style="grid-row:4">10:00</div>
-      <div class="g-time" style="grid-row:5">10:30</div>
-      <div class="g-time" style="grid-row:6">11:00</div>
-      <div class="g-time" style="grid-row:7">11:30</div>
-      <div class="g-time" style="grid-row:8">12:00</div>
-      <div class="g-time" style="grid-row:9">12:30</div>
-      <div class="g-time" style="grid-row:10">13:00</div>
-      <div class="g-time" style="grid-row:11">13:30</div>
-      <div class="g-time" style="grid-row:12">14:00</div>
-      <div class="g-time" style="grid-row:13">14:30</div>
-      <div class="g-time" style="grid-row:14">15:00</div>
-      <div class="g-time" style="grid-row:15">15:30</div>
-      <div class="g-time" style="grid-row:16">16:00</div>
-      <div class="g-time" style="grid-row:17">16:30</div>
-      <div class="g-time" style="grid-row:18">17:00</div>
-      <div class="g-time" style="grid-row:19">17:30</div>
-      <div class="g-time" style="grid-row:20">18:00</div>
-      <div class="g-time" style="grid-row:21">18:30</div>
-      <div class="g-time" style="grid-row:22">19:00</div>
-      <div class="g-time" style="grid-row:23">19:30</div>
-
-      <!-- lunch band 12:00-13:00 -->
-      <div class="g-lunch" style="grid-row:8 / 10">Lunch</div>
-
-      <!-- classes -->
-      <div class="g-block bg-blue"   style="grid-column:2; grid-row:2 / 8"><span class="c">Data Analytics</span><span class="m">ECC-610 · 01276551</span><span class="el">CE elective</span></div>
-      <div class="g-block bg-orange" style="grid-column:3; grid-row:2 / 8"><span class="c">UX/UI Design</span><span class="m">ECC-610 · 01276545</span><span class="el">CE elective</span></div>
-      <div class="g-block bg-green"  style="grid-column:3; grid-row:10 / 16"><span class="c">Artificial Intelligence</span><span class="m">ECC-610 · 01276342</span></div>
-      <div class="g-block bg-dark"   style="grid-column:4; grid-row:2 / 8"><span class="c">System Administration</span><span class="m">ECC-610 · 01276521</span><span class="el">CE elective</span></div>
-      <div class="g-block bg-orange" style="grid-column:4; grid-row:10 / 16"><span class="c">Microcontroller (theory)</span><span class="m">ECC-610 · 01276314</span></div>
-      <div class="g-block bg-green"  style="grid-column:4; grid-row:17 / 23"><span class="c">Microcontroller (lab)</span><span class="m">ECC-610 · 01276314-1901</span></div>
-      <div class="g-block bg-blue"   style="grid-column:6; grid-row:2 / 8"><span class="c">Operating Systems</span><span class="m">ECC-609 · 01276324</span></div>
-    </div>
+    <div class="grid" id="grid"></div>
   </div>
 
   <h2>Detail</h2>
@@ -245,57 +226,7 @@
     <thead>
       <tr><th>Day</th><th>Time</th><th>Course</th><th>Room</th><th>Lecturer</th></tr>
     </thead>
-    <tbody>
-      <tr>
-        <td><span class="day">Mon</span></td>
-        <td class="time">09:00–12:00</td>
-        <td><div class="course">Intro to Data Analytics</div><div class="code">01276551-901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Assoc. Prof. Dr. Rathachai Chawuthai</td>
-      </tr>
-      <tr>
-        <td><span class="day">Tue</span></td>
-        <td class="time">09:00–12:00</td>
-        <td><div class="course">UX/UI Design</div><div class="code">01276545-901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Asst. Prof. Dr. Chompoonuch Tengcharoen</td>
-      </tr>
-      <tr>
-        <td><span class="day">Tue</span></td>
-        <td class="time">13:00–16:00</td>
-        <td><div class="course">Artificial Intelligence</div><div class="code">01276342-901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Assoc. Prof. Dr. Kietikul Jearanaitanakij</td>
-      </tr>
-      <tr>
-        <td><span class="day">Wed</span></td>
-        <td class="time">09:00–12:00</td>
-        <td><div class="course">Practice of System Administration</div><div class="code">01276521-901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Dr. Parinya Ekparinya</td>
-      </tr>
-      <tr>
-        <td><span class="day">Wed</span></td>
-        <td class="time">13:00–16:00</td>
-        <td><div class="course">Microcontroller Interfacing <span class="code">(theory)</span></div><div class="code">01276314-901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Asst. Prof. Sorayut Glomglome</td>
-      </tr>
-      <tr>
-        <td><span class="day">Wed</span></td>
-        <td class="time">16:30–19:30</td>
-        <td><div class="course">Microcontroller Interfacing <span class="code">(lab)</span></div><div class="code">01276314-1901</div></td>
-        <td><span class="pill">ECC-610</span></td>
-        <td>Asst. Prof. Sorayut Glomglome</td>
-      </tr>
-      <tr>
-        <td><span class="day">Fri</span></td>
-        <td class="time">09:00–12:00</td>
-        <td><div class="course">Operating Systems</div><div class="code">01276324-901</div></td>
-        <td><span class="pill">ECC-609</span></td>
-        <td>Asst. Prof. Watjanapong Kasemsiri</td>
-      </tr>
-    </tbody>
+    <tbody id="detail-body"></tbody>
   </table>
 
   <h2 class="exam">Exam Schedule</h2>
@@ -303,24 +234,235 @@
     <thead>
       <tr><th>Course</th><th>Midterm</th><th>Final</th></tr>
     </thead>
-    <tbody>
-      <tr><td class="course">Operating Systems</td><td>Mon 17 Aug 2026</td><td>Wed 28 Oct 2026</td></tr>
-      <tr><td class="course">Microcontroller Interfacing</td><td>Thu 20 Aug 2026</td><td>Wed 4 Nov 2026</td></tr>
-      <tr><td class="course">Artificial Intelligence</td><td class="self">self-arranged</td><td>Mon 26 Oct 2026</td></tr>
-      <tr><td class="course">Practice of System Administration</td><td class="self">self-arranged</td><td>Fri 30 Oct 2026</td></tr>
-      <tr><td class="course">Intro to Data Analytics</td><td class="self">self-arranged</td><td>Mon 2 Nov 2026</td></tr>
-      <tr><td class="course">UX/UI Design</td><td class="self">self-arranged</td><td class="self">self-arranged</td></tr>
-    </tbody>
+    <tbody id="exam-body"></tbody>
   </table>
-  <p class="sub" style="margin-top:12px;">All exams 13:30–16:30.</p>
 
   <footer>
     <ul>
-      <li>Microcontroller lab section (1901): both exams self-arranged.</li>
-      <li>Credits — Microcontroller 4(3-3-8); all others 3(3-0-6).</li>
+      <li>Split-session classes (08:45–12:00) have a ~15-min break at 10:15.</li>
+      <li>Lab sections use paired theory section exam dates where applicable.</li>
       <li>All courses restricted to Computer Engineering (International).</li>
     </ul>
   </footer>
 </div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  // --- constants ---
+  const GRID_ORIGIN_MIN = 8 * 60 + 0;    // 08:00 in minutes
+  const GRID_END_MIN    = 19 * 60 + 30;  // 19:30
+  const SLOT_MIN        = 15;            // 15-min row unit
+  const ROW_PX          = 16;            // px per 15-min slot
+  const HEADER_ROW_PX   = 50;
+  const TOTAL_SLOTS     = (GRID_END_MIN - GRID_ORIGIN_MIN) / SLOT_MIN; // 46
+
+  const DAY_NAMES = { 2: 'Mon', 3: 'Tue', 4: 'Wed', 5: 'Thu', 6: 'Fri' };
+  const COLORS    = ['bg-blue', 'bg-orange', 'bg-green', 'bg-dark'];
+
+  function toMin(hhmm) {
+    const [h, m] = hhmm.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  function rowIndex(hhmm) {
+    // row 1 = header, row 2 = first slot (08:45)
+    return 2 + (toMin(hhmm) - GRID_ORIGIN_MIN) / SLOT_MIN;
+  }
+
+  function colIndex(day) {
+    // day 2=Mon→col2, day 3=Tue→col3, ... day 6=Fri→col6
+    return day; // day codes already map 2-6 → col 2-6
+  }
+
+  // Format "2026-08-17 09:30" → { date: "Mon 17 Aug 2026", time: "09:30" }
+  function parseExamDT(dt) {
+    if (!dt) return null;
+    const [datePart, timePart] = dt.split(' ');
+    const d = new Date(datePart + 'T00:00:00');
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    const months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return {
+      date: `${dayName} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`,
+      time: timePart.slice(0, 5)
+    };
+  }
+
+  // Derive exam end time: start time + 3h for most, but just show the start
+  // Detail table uses start; plan to derive end by course pair lookup
+  // For simplicity render only start from the data fields we stored.
+  // The JSON stored e.g. "2026-08-17 09:30" as midterm start.
+  // Exam end is always start + 3h (verified from JSON end fields).
+  function examEndTime(startHHMM) {
+    if (!startHHMM) return null;
+    const [h, m] = startHHMM.split(':').map(Number);
+    const end = h * 60 + m + 180;
+    return `${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;
+  }
+
+  function renderExamCell(dt_str) {
+    if (!dt_str) return '<span class="self">self-arranged</span>';
+    const info = parseExamDT(dt_str);
+    const timeStart = info.time;
+    const timeEnd   = examEndTime(timeStart);
+    return `<span class="exam-date">${info.date}</span><span class="exam-time">${timeStart}–${timeEnd}</span>`;
+  }
+
+  // group courses by base code+name for exam table (merge theory+lab)
+  function examRows(courses) {
+    const seen = new Map();
+    for (const c of courses) {
+      // Use code+kind-stripped name as key
+      const baseName = c.name.replace(/ \(theory\)$/, '').replace(/ \(lab\)$/, '');
+      const key = c.code + '|' + baseName;
+      if (!seen.has(key)) {
+        seen.set(key, { name: baseName, midterm: c.midterm, final: c.final });
+      } else {
+        // If lab has no exam but theory does, keep theory's. Already handled by data.
+        const existing = seen.get(key);
+        if (!existing.midterm && c.midterm) existing.midterm = c.midterm;
+        if (!existing.final && c.final) existing.final = c.final;
+      }
+    }
+    return [...seen.values()];
+  }
+
+  function buildGrid(year) {
+    const courses = TIMETABLE[year].courses;
+    const grid = document.getElementById('grid');
+
+    // Compute grid-template-rows: header (50px) + 43 slots (16px each)
+    const rowDef = `${HEADER_ROW_PX}px repeat(${TOTAL_SLOTS}, ${ROW_PX}px)`;
+    grid.style.gridTemplateRows = rowDef;
+
+    // Column stripe gradient: hour stripes align to ROW_PX * 4 (= 64px per hour)
+    const hrPx = ROW_PX * 4;
+    const colBg = `repeating-linear-gradient(var(--light) 0 ${hrPx - 1}px, var(--lightgray) ${hrPx - 1}px ${hrPx}px)`;
+
+    let html = '';
+
+    // Header row
+    html += `<div class="g-head" style="grid-column:1">Time</div>`;
+    html += `<div class="g-head" style="grid-column:2">Mon</div>`;
+    html += `<div class="g-head" style="grid-column:3">Tue</div>`;
+    html += `<div class="g-head" style="grid-column:4">Wed</div>`;
+    html += `<div class="g-head" style="grid-column:5">Thu</div>`;
+    html += `<div class="g-head" style="grid-column:6">Fri</div>`;
+
+    // Column backgrounds
+    const colSpan = `grid-row: 2 / ${2 + TOTAL_SLOTS}`;
+    html += `<div class="g-col first" style="grid-column:2; ${colSpan}; background:${colBg}"></div>`;
+    for (let c = 3; c <= 6; c++) {
+      html += `<div class="g-col" style="grid-column:${c}; ${colSpan}; background:${colBg}"></div>`;
+    }
+
+    // Time labels every 30 min (skip odd 15-min lines; skip slot 0 to avoid header overlap)
+    for (let slot = 0; slot < TOTAL_SLOTS; slot++) {
+      const minAbs = GRID_ORIGIN_MIN + slot * SLOT_MIN;
+      if (slot === 0) continue;
+      if (minAbs % 30 !== 0) continue;
+      const hh = String(Math.floor(minAbs / 60)).padStart(2, '0');
+      const mm = String(minAbs % 60).padStart(2, '0');
+      html += `<div class="g-time" style="grid-row:${2 + slot}">${hh}:${mm}</div>`;
+    }
+
+    // Lunch band 12:00–13:00
+    const lunchStart = rowIndex('12:00');
+    const lunchEnd   = rowIndex('13:00');
+    html += `<div class="g-lunch" style="grid-row:${lunchStart} / ${lunchEnd}">Lunch</div>`;
+
+    // Course blocks
+    courses.forEach((c, i) => {
+      const color = COLORS[i % COLORS.length];
+      const rStart = rowIndex(c.start);
+      const rEnd   = rowIndex(c.end);
+      const col    = colIndex(c.day);
+      const breakLine = c.hasBreak ? '<span class="break-line"></span>' : '';
+      const tagBadge  = c.tag ? `<span class="el">${c.tag}</span>` : '';
+      html += `<div class="g-block ${color}" style="grid-column:${col}; grid-row:${rStart} / ${rEnd}">` +
+              `<span class="c">${c.name}</span>` +
+              breakLine +
+              `<span class="m">${c.start}–${c.end} &middot; ${c.room}</span>` +
+              `<span class="m">${c.teacher}</span>` +
+              tagBadge +
+              `</div>`;
+    });
+
+    grid.innerHTML = html;
+  }
+
+  function buildDetail(year) {
+    const courses = TIMETABLE[year].courses;
+    const tbody = document.getElementById('detail-body');
+    let html = '';
+    for (const c of courses) {
+      const dayName = DAY_NAMES[c.day];
+      const timeStr = c.start + '–' + c.end;
+      const sectionNote = c.tag === 'GenEd'
+        ? `<div class="code">${c.code} &middot; sections ${c.section} <span class="pill" style="font-size:0.65rem;padding:1px 7px">GenEd</span></div>`
+        : `<div class="code">${c.code}-${c.section}</div>`;
+      html += `<tr>
+        <td><span class="day">${dayName}</span></td>
+        <td class="time">${timeStr}</td>
+        <td><div class="course">${c.name}</div>${sectionNote}</td>
+        <td><span class="pill">${c.room}</span></td>
+        <td>${c.teacher}</td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  function buildExam(year) {
+    const courses = TIMETABLE[year].courses;
+    const rows = examRows(courses);
+    const tbody = document.getElementById('exam-body');
+    let html = '';
+    for (const r of rows) {
+      html += `<tr>
+        <td class="course">${r.name}</td>
+        <td>${renderExamCell(r.midterm)}</td>
+        <td>${renderExamCell(r.final)}</td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  function render(year) {
+    buildGrid(year);
+    buildDetail(year);
+    buildExam(year);
+
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.year) === year);
+    });
+
+    // Update subtitle
+    document.getElementById('subtitle').textContent =
+      `Computer Engineering (International) · KMITL · ${TIMETABLE[year].label}`;
+
+    try { localStorage.setItem('kmitl-year', year); } catch(e) {}
+  }
+
+  // Build tab bar
+  function buildTabs() {
+    const container = document.getElementById('tabs');
+    let html = '';
+    for (const y of [1, 2, 3]) {
+      html += `<button class="tab-btn" data-year="${y}">${TIMETABLE[y].label}</button>`;
+    }
+    container.innerHTML = html;
+    container.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => render(Number(btn.dataset.year)));
+    });
+  }
+
+  buildTabs();
+
+  let saved = 1;
+  try { saved = Number(localStorage.getItem('kmitl-year')) || 1; } catch(e) {}
+  render(saved);
+})();
+</script>
 </body>
 </html>
