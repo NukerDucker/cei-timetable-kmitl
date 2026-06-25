@@ -36,10 +36,8 @@
     letter-spacing: -0.02em;
     margin-bottom: 8px;
   }
-  .sub {
-    color: var(--mid);
-    font-size: 0.95rem;
-  }
+  .sub { color: var(--mid); font-size: 0.95rem; }
+
   /* --- tab bar --- */
   .tabs {
     display: flex;
@@ -60,11 +58,8 @@
     transition: all 0.15s;
   }
   .tab-btn:hover { border-color: var(--orange); color: var(--dark); }
-  .tab-btn.active {
-    background: var(--orange);
-    border-color: var(--orange);
-    color: var(--light);
-  }
+  .tab-btn.active { background: var(--orange); border-color: var(--orange); color: var(--light); }
+
   h2 {
     font-family: 'Poppins', Arial, sans-serif;
     font-weight: 500;
@@ -74,18 +69,10 @@
     align-items: center;
     gap: 12px;
   }
-  h2::before {
-    content: '';
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--orange);
-  }
+  h2::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--orange); }
   h2.exam::before { background: var(--blue); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.92rem;
-  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
   thead th {
     font-family: 'Poppins', Arial, sans-serif;
     font-weight: 500;
@@ -96,24 +83,12 @@
     text-align: left;
     padding: 0 16px 12px;
   }
-  tbody td {
-    padding: 14px 16px;
-    border-top: 1px solid var(--lightgray);
-    vertical-align: middle;
-  }
+  tbody td { padding: 14px 16px; border-top: 1px solid var(--lightgray); vertical-align: middle; }
   tbody tr:hover { background: rgba(232,230,220,0.4); }
-  .day {
-    font-family: 'Poppins', Arial, sans-serif;
-    font-weight: 500;
-    font-size: 0.8rem;
-  }
+.day { font-family: 'Poppins', Arial, sans-serif; font-weight: 500; font-size: 0.8rem; }
   .time { white-space: nowrap; color: var(--dark); }
   .course { font-weight: 500; }
-  .code {
-    font-family: 'Poppins', Arial, sans-serif;
-    font-size: 0.78rem;
-    color: var(--mid);
-  }
+  .code { font-family: 'Poppins', Arial, sans-serif; font-size: 0.78rem; color: var(--mid); }
   .pill {
     display: inline-block;
     font-family: 'Poppins', Arial, sans-serif;
@@ -124,6 +99,73 @@
     color: var(--dark);
   }
   .self { color: var(--mid); font-style: italic; }
+
+  /* --- key dates --- */
+  .key-dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .kd-card {
+    border: 1.5px solid var(--lightgray);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .kd-label {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.72rem;
+    color: var(--mid);
+    margin-bottom: 2px;
+  }
+  .kd-date {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .kd-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.65rem;
+    padding: 1px 8px;
+    border-radius: 99px;
+    background: var(--lightgray);
+    color: var(--dark);
+  }
+  .kd-badge.active { background: #e6f0e6; color: var(--green); }
+  .kd-badge.soon   { background: #fde8e0; color: var(--orange); }
+  .kd-badge.today  { background: var(--orange); color: var(--light); }
+  .kd-badge.past   { background: transparent; color: var(--mid); padding: 0; }
+
+  /* --- legend --- */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.72rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: var(--mid); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* --- countdown badge --- */
+  .cdown {
+    display: inline-block;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.65rem;
+    padding: 1px 7px;
+    border-radius: 99px;
+    background: var(--lightgray);
+    color: var(--dark);
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .cdown.soon { background: #fde8e0; color: var(--orange); }
+  .cdown.today { background: var(--orange); color: var(--light); }
+  .cdown.past { color: var(--mid); background: transparent; padding: 0; }
+
   footer {
     margin-top: 48px;
     padding-top: 20px;
@@ -132,6 +174,7 @@
     font-size: 0.82rem;
   }
   footer li { margin-left: 18px; }
+
   /* --- grid view --- */
   .grid-wrap { overflow-x: auto; margin-bottom: 8px; }
   .grid {
@@ -147,9 +190,8 @@
     display: flex; align-items: center; justify-content: center;
     border-bottom: 2px solid var(--dark);
   }
-  .g-col {
-    border-right: 1px solid var(--lightgray);
-  }
+  .g-head.today { color: var(--orange); }
+  .g-col { border-right: 1px solid var(--lightgray); }
   .g-col.first { border-left: 1px solid var(--lightgray); }
   .g-time {
     grid-column: 1;
@@ -201,6 +243,17 @@
   .exam-date { font-weight: 500; }
   .exam-time { display: block; color: var(--mid); font-size: 0.82rem; }
 
+  /* --- print --- */
+  @media print {
+    body { padding: 20px; font-size: 15px; }
+    .tabs, footer { display: none !important; }
+    .grid-wrap { overflow: visible; }
+    .grid { min-width: 0; }
+    h2 { margin: 24px 0 12px; page-break-after: avoid; }
+    table { page-break-inside: avoid; }
+    @page { size: A4 landscape; margin: 1.5cm; }
+  }
+
   @media (max-width: 640px) {
     body { padding: 32px 12px; }
     .code, thead th:nth-child(5) { display: none; }
@@ -217,10 +270,13 @@
 
   <div class="tabs" id="tabs"></div>
 
+  <div id="key-dates"></div>
+
   <h2>Weekly Timetable</h2>
   <div class="grid-wrap">
     <div class="grid" id="grid"></div>
   </div>
+  <div class="legend" id="legend"></div>
 
   <h2>Detail</h2>
   <table>
@@ -250,15 +306,19 @@
 <script src="data.js"></script>
 <script>
 (function () {
-  // --- constants ---
-  const GRID_ORIGIN_MIN = 8 * 60 + 0;    // 08:00 in minutes
-  const GRID_END_MIN    = 19 * 60 + 30;  // 19:30
-  const SLOT_MIN        = 15;            // 15-min row unit
-  const ROW_PX          = 16;            // px per 15-min slot
+  const GRID_ORIGIN_MIN = 8 * 60;
+  const GRID_END_MIN    = 19 * 60 + 30;
+  const SLOT_MIN        = 15;
+  const ROW_PX          = 16;
   const HEADER_ROW_PX   = 50;
   const TOTAL_SLOTS     = (GRID_END_MIN - GRID_ORIGIN_MIN) / SLOT_MIN; // 46
 
   const DAY_NAMES = { 2: 'Mon', 3: 'Tue', 4: 'Wed', 5: 'Thu', 6: 'Fri' };
+
+  // today's grid column (2=Mon … 6=Fri), null if weekend
+  const TODAY_JS_DAY = new Date().getDay(); // 0=Sun,1=Mon…6=Sat
+  const TODAY_COL = { 1:2, 2:3, 3:4, 4:5, 5:6 }[TODAY_JS_DAY] || null;
+
   function courseColor(c) {
     if (c.tag === 'GenEd')       return 'bg-green';
     if (c.tag === 'CE elective') return 'bg-orange';
@@ -272,33 +332,21 @@
   }
 
   function rowIndex(hhmm) {
-    // row 1 = header, row 2 = first slot (08:45)
     return 2 + (toMin(hhmm) - GRID_ORIGIN_MIN) / SLOT_MIN;
   }
 
-  function colIndex(day) {
-    // day 2=Mon→col2, day 3=Tue→col3, ... day 6=Fri→col6
-    return day; // day codes already map 2-6 → col 2-6
-  }
-
-  // Format "2026-08-17 09:30" → { date: "Mon 17 Aug 2026", time: "09:30" }
   function parseExamDT(dt) {
     if (!dt) return null;
     const [datePart, timePart] = dt.split(' ');
     const d = new Date(datePart + 'T00:00:00');
     const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
-    const months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return {
       date: `${dayName} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`,
       time: timePart.slice(0, 5)
     };
   }
 
-  // Derive exam end time: start time + 3h for most, but just show the start
-  // Detail table uses start; plan to derive end by course pair lookup
-  // For simplicity render only start from the data fields we stored.
-  // The JSON stored e.g. "2026-08-17 09:30" as midterm start.
-  // Exam end is always start + 3h (verified from JSON end fields).
   function examEndTime(startHHMM) {
     if (!startHHMM) return null;
     const [h, m] = startHHMM.split(':').map(Number);
@@ -306,86 +354,106 @@
     return `${String(Math.floor(end/60)).padStart(2,'0')}:${String(end%60).padStart(2,'0')}`;
   }
 
+  function daysUntil(dt_str) {
+    if (!dt_str) return null;
+    const exam = new Date(dt_str.split(' ')[0] + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.ceil((exam - today) / 86400000);
+  }
+
+  function countdownBadge(dt_str) {
+    const d = daysUntil(dt_str);
+    if (d === null) return '';
+    if (d < 0)  return `<span class="cdown past">past</span>`;
+    if (d === 0) return `<span class="cdown today">today!</span>`;
+    if (d <= 14) return `<span class="cdown soon">in ${d}d</span>`;
+    return `<span class="cdown">in ${d}d</span>`;
+  }
+
   function renderExamCell(dt_str) {
     if (!dt_str) return '<span class="self">self-arranged</span>';
     const info = parseExamDT(dt_str);
-    const timeStart = info.time;
-    const timeEnd   = examEndTime(timeStart);
-    return `<span class="exam-date">${info.date}</span><span class="exam-time">${timeStart}–${timeEnd}</span>`;
+    const end  = examEndTime(info.time);
+    return `<span class="exam-date">${info.date}</span>` +
+           `<span class="exam-time">${info.time}–${end}</span>` +
+           countdownBadge(dt_str);
   }
 
-  // group courses by base code+name for exam table (merge theory+lab)
   function examRows(courses) {
     const seen = new Map();
     for (const c of courses) {
-      // Use code+kind-stripped name as key
       const baseName = c.name.replace(/ \(theory\)$/, '').replace(/ \(lab\)$/, '');
       const key = (c.code || 'gened') + '|' + baseName + '|' + c.day + c.start;
       if (!seen.has(key)) {
         seen.set(key, { name: baseName, midterm: c.midterm, final: c.final });
       } else {
-        // If lab has no exam but theory does, keep theory's. Already handled by data.
-        const existing = seen.get(key);
-        if (!existing.midterm && c.midterm) existing.midterm = c.midterm;
-        if (!existing.final && c.final) existing.final = c.final;
+        const ex = seen.get(key);
+        if (!ex.midterm && c.midterm) ex.midterm = c.midterm;
+        if (!ex.final   && c.final)   ex.final   = c.final;
       }
     }
     return [...seen.values()];
   }
 
+  function buildLegend() {
+    const items = [
+      { color: 'var(--blue)',   label: 'Required theory' },
+      { color: 'var(--dark)',   label: 'Lab / practical' },
+      { color: 'var(--orange)', label: 'CE elective' },
+      { color: 'var(--green)',  label: 'GenEd' },
+    ];
+    document.getElementById('legend').innerHTML = items.map(i =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${i.color}"></span>${i.label}</span>`
+    ).join('');
+  }
+
   function buildGrid(year) {
     const courses = TIMETABLE[year].courses;
     const grid = document.getElementById('grid');
+    grid.style.gridTemplateRows = `${HEADER_ROW_PX}px repeat(${TOTAL_SLOTS}, ${ROW_PX}px)`;
 
-    // Compute grid-template-rows: header (50px) + 43 slots (16px each)
-    const rowDef = `${HEADER_ROW_PX}px repeat(${TOTAL_SLOTS}, ${ROW_PX}px)`;
-    grid.style.gridTemplateRows = rowDef;
-
-    // Column stripe gradient: hour stripes align to ROW_PX * 4 (= 64px per hour)
-    const hrPx = ROW_PX * 4;
-    const colBg = `repeating-linear-gradient(var(--light) 0 ${hrPx - 1}px, var(--lightgray) ${hrPx - 1}px ${hrPx}px)`;
+    const hrPx  = ROW_PX * 4;
+    const colBg = `repeating-linear-gradient(var(--light) 0 ${hrPx-1}px, var(--lightgray) ${hrPx-1}px ${hrPx}px)`;
+    const todayBg = `linear-gradient(rgba(217,119,87,0.08) 0,rgba(217,119,87,0.08) 100%), ${colBg}`;
 
     let html = '';
 
-    // Header row
+    // Header
     html += `<div class="g-head" style="grid-column:1">Time</div>`;
-    html += `<div class="g-head" style="grid-column:2">Mon</div>`;
-    html += `<div class="g-head" style="grid-column:3">Tue</div>`;
-    html += `<div class="g-head" style="grid-column:4">Wed</div>`;
-    html += `<div class="g-head" style="grid-column:5">Thu</div>`;
-    html += `<div class="g-head" style="grid-column:6">Fri</div>`;
+    for (const [col, name] of [[2,'Mon'],[3,'Tue'],[4,'Wed'],[5,'Thu'],[6,'Fri']]) {
+      const cls = col === TODAY_COL ? ' today' : '';
+      html += `<div class="g-head${cls}" style="grid-column:${col}">${name}</div>`;
+    }
 
     // Column backgrounds
     const colSpan = `grid-row: 2 / ${2 + TOTAL_SLOTS}`;
-    html += `<div class="g-col first" style="grid-column:2; ${colSpan}; background:${colBg}"></div>`;
-    for (let c = 3; c <= 6; c++) {
-      html += `<div class="g-col" style="grid-column:${c}; ${colSpan}; background:${colBg}"></div>`;
+    for (let c = 2; c <= 6; c++) {
+      const first = c === 2 ? ' first' : '';
+      const bg    = c === TODAY_COL ? todayBg : colBg;
+      html += `<div class="g-col${first}" style="grid-column:${c}; ${colSpan}; background:${bg}"></div>`;
     }
 
-    // Time labels every 30 min (skip odd 15-min lines; skip slot 0 to avoid header overlap)
+    // Time labels every 30 min (skip slot 0 — avoids header overlap)
     for (let slot = 0; slot < TOTAL_SLOTS; slot++) {
-      const minAbs = GRID_ORIGIN_MIN + slot * SLOT_MIN;
       if (slot === 0) continue;
+      const minAbs = GRID_ORIGIN_MIN + slot * SLOT_MIN;
       if (minAbs % 30 !== 0) continue;
-      const hh = String(Math.floor(minAbs / 60)).padStart(2, '0');
-      const mm = String(minAbs % 60).padStart(2, '0');
-      html += `<div class="g-time" style="grid-row:${2 + slot}">${hh}:${mm}</div>`;
+      const hh = String(Math.floor(minAbs/60)).padStart(2,'0');
+      const mm = String(minAbs%60).padStart(2,'0');
+      html += `<div class="g-time" style="grid-row:${2+slot}">${hh}:${mm}</div>`;
     }
 
-    // Lunch band 12:00–13:00
-    const lunchStart = rowIndex('12:00');
-    const lunchEnd   = rowIndex('13:00');
-    html += `<div class="g-lunch" style="grid-row:${lunchStart} / ${lunchEnd}">Lunch</div>`;
+    // Lunch band
+    html += `<div class="g-lunch" style="grid-row:${rowIndex('12:00')} / ${rowIndex('13:00')}">Lunch</div>`;
 
     // Course blocks
-    courses.forEach((c, i) => {
-      const color = courseColor(c);
-      const rStart = rowIndex(c.start);
-      const rEnd   = rowIndex(c.end);
-      const col    = colIndex(c.day);
+    courses.forEach(c => {
+      const color    = courseColor(c);
+      const rStart   = rowIndex(c.start);
+      const rEnd     = rowIndex(c.end);
       const breakLine = c.hasBreak ? '<span class="break-line"></span>' : '';
       const tagBadge  = c.tag ? `<span class="el">${c.tag}</span>` : '';
-      html += `<div class="g-block ${color}" style="grid-column:${col}; grid-row:${rStart} / ${rEnd}">` +
+      html += `<div class="g-block ${color}" style="grid-column:${c.day}; grid-row:${rStart} / ${rEnd}">` +
               `<span class="c">${c.name}</span>` +
               breakLine +
               `<span class="m">${c.start}–${c.end}${c.room ? ' &middot; ' + c.room : ''}</span>` +
@@ -399,10 +467,8 @@
 
   function buildDetail(year) {
     const courses = TIMETABLE[year].courses;
-    const tbody = document.getElementById('detail-body');
     let html = '';
     for (const c of courses) {
-      const dayName = DAY_NAMES[c.day];
       const timeStr = c.start + '–' + c.end;
       let sectionNote = '';
       if (!c.code) {
@@ -413,20 +479,19 @@
         sectionNote = `<div class="code">${c.code}-${c.section}</div>`;
       }
       html += `<tr>
-        <td><span class="day">${dayName}</span></td>
+        <td><span class="day">${DAY_NAMES[c.day]}</span></td>
         <td class="time">${timeStr}</td>
         <td><div class="course">${c.name}</div>${sectionNote}</td>
         <td>${c.room ? `<span class="pill">${c.room}</span>` : '<span class="self">TBA</span>'}</td>
         <td>${c.teacher || '<span class="self">TBA</span>'}</td>
       </tr>`;
     }
-    tbody.innerHTML = html;
+    document.getElementById('detail-body').innerHTML = html;
+
   }
 
   function buildExam(year) {
-    const courses = TIMETABLE[year].courses;
-    const rows = examRows(courses);
-    const tbody = document.getElementById('exam-body');
+    const rows = examRows(TIMETABLE[year].courses);
     let html = '';
     for (const r of rows) {
       html += `<tr>
@@ -435,40 +500,73 @@
         <td>${renderExamCell(r.final)}</td>
       </tr>`;
     }
-    tbody.innerHTML = html;
+    document.getElementById('exam-body').innerHTML = html;
   }
 
   function render(year) {
     buildGrid(year);
     buildDetail(year);
     buildExam(year);
-
-    // Update active tab
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.toggle('active', Number(btn.dataset.year) === year);
     });
-
-    // Update subtitle
     document.getElementById('subtitle').textContent =
       `Computer Engineering (International) · KMITL · ${TIMETABLE[year].label}`;
-
     try { localStorage.setItem('kmitl-year', year); } catch(e) {}
   }
 
-  // Build tab bar
+  function buildKeyDates() {
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    function parse(str) { const d = new Date(str + 'T00:00:00'); d.setHours(0,0,0,0); return d; }
+    function fmt(d) {
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    function fmtRange(a, b) { return fmt(parse(a)) + ' – ' + fmt(parse(b)); }
+    function badge(start, end) {
+      const s = parse(start), e = end ? parse(end) : parse(start);
+      const diff = Math.ceil((s - today) / 86400000);
+      if (today > e)  return `<span class="kd-badge past">ended</span>`;
+      if (today >= s) return `<span class="kd-badge active">active</span>`;
+      if (diff === 0) return `<span class="kd-badge today">today</span>`;
+      if (diff <= 14) return `<span class="kd-badge soon">in ${diff}d</span>`;
+      return `<span class="kd-badge">in ${diff}d</span>`;
+    }
+
+    const items = [
+      { label: 'Semester opens',     date: fmt(parse('2026-06-29')),              b: badge('2026-06-29', '2026-06-29') },
+      { label: 'Add / change period',date: fmtRange('2026-06-29','2026-07-17'),   b: badge('2026-06-29','2026-07-17') },
+      { label: 'Withdraw period',    date: fmtRange('2026-06-29','2026-10-02'),   b: badge('2026-06-29','2026-10-02') },
+      { label: 'Semester ends',      date: fmt(parse('2026-11-07')),              b: badge('2026-11-07','2026-11-07') },
+    ];
+
+    document.getElementById('key-dates').innerHTML =
+      `<div class="key-dates">` +
+      items.map(i =>
+        `<div class="kd-card">` +
+        `<div class="kd-label">${i.label}</div>` +
+        `<div class="kd-date">${i.date}</div>` +
+        i.b +
+        `</div>`
+      ).join('') +
+      `</div>`;
+  }
+
   function buildTabs() {
     const container = document.getElementById('tabs');
-    let html = '';
-    for (const y of [1, 2, 3]) {
-      html += `<button class="tab-btn" data-year="${y}">${TIMETABLE[y].label}</button>`;
-    }
-    container.innerHTML = html;
+    container.innerHTML = [1,2,3].map(y =>
+      `<button class="tab-btn" data-year="${y}">${TIMETABLE[y].label}</button>`
+    ).join('');
     container.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => render(Number(btn.dataset.year)));
     });
   }
 
   buildTabs();
+  buildKeyDates();
+  buildLegend();
 
   let saved = 1;
   try { saved = Number(localStorage.getItem('kmitl-year')) || 1; } catch(e) {}
