@@ -258,7 +258,12 @@
   const TOTAL_SLOTS     = (GRID_END_MIN - GRID_ORIGIN_MIN) / SLOT_MIN; // 46
 
   const DAY_NAMES = { 2: 'Mon', 3: 'Tue', 4: 'Wed', 5: 'Thu', 6: 'Fri' };
-  const COLORS    = ['bg-blue', 'bg-orange', 'bg-green', 'bg-dark'];
+  function courseColor(c) {
+    if (c.tag === 'GenEd')       return 'bg-green';
+    if (c.tag === 'CE elective') return 'bg-orange';
+    if (c.kind === 'lab')        return 'bg-dark';
+    return 'bg-blue';
+  }
 
   function toMin(hhmm) {
     const [h, m] = hhmm.split(':').map(Number);
@@ -314,7 +319,7 @@
     for (const c of courses) {
       // Use code+kind-stripped name as key
       const baseName = c.name.replace(/ \(theory\)$/, '').replace(/ \(lab\)$/, '');
-      const key = c.code + '|' + baseName;
+      const key = (c.code || 'gened') + '|' + baseName + '|' + c.day + c.start;
       if (!seen.has(key)) {
         seen.set(key, { name: baseName, midterm: c.midterm, final: c.final });
       } else {
@@ -373,7 +378,7 @@
 
     // Course blocks
     courses.forEach((c, i) => {
-      const color = COLORS[i % COLORS.length];
+      const color = courseColor(c);
       const rStart = rowIndex(c.start);
       const rEnd   = rowIndex(c.end);
       const col    = colIndex(c.day);
@@ -382,8 +387,8 @@
       html += `<div class="g-block ${color}" style="grid-column:${col}; grid-row:${rStart} / ${rEnd}">` +
               `<span class="c">${c.name}</span>` +
               breakLine +
-              `<span class="m">${c.start}–${c.end} &middot; ${c.room}</span>` +
-              `<span class="m">${c.teacher}</span>` +
+              `<span class="m">${c.start}–${c.end}${c.room ? ' &middot; ' + c.room : ''}</span>` +
+              (c.teacher ? `<span class="m">${c.teacher}</span>` : '') +
               tagBadge +
               `</div>`;
     });
@@ -398,15 +403,20 @@
     for (const c of courses) {
       const dayName = DAY_NAMES[c.day];
       const timeStr = c.start + '–' + c.end;
-      const sectionNote = c.tag === 'GenEd'
-        ? `<div class="code">${c.code} &middot; sections ${c.section} <span class="pill" style="font-size:0.65rem;padding:1px 7px">GenEd</span></div>`
-        : `<div class="code">${c.code}-${c.section}</div>`;
+      let sectionNote = '';
+      if (!c.code) {
+        sectionNote = `<div class="code"><span class="pill" style="font-size:0.65rem;padding:1px 7px">GenEd</span></div>`;
+      } else if (c.tag === 'GenEd') {
+        sectionNote = `<div class="code">${c.code} &middot; sections ${c.section} <span class="pill" style="font-size:0.65rem;padding:1px 7px">GenEd</span></div>`;
+      } else {
+        sectionNote = `<div class="code">${c.code}-${c.section}</div>`;
+      }
       html += `<tr>
         <td><span class="day">${dayName}</span></td>
         <td class="time">${timeStr}</td>
         <td><div class="course">${c.name}</div>${sectionNote}</td>
-        <td><span class="pill">${c.room}</span></td>
-        <td>${c.teacher}</td>
+        <td>${c.room ? `<span class="pill">${c.room}</span>` : '<span class="self">TBA</span>'}</td>
+        <td>${c.teacher || '<span class="self">TBA</span>'}</td>
       </tr>`;
     }
     tbody.innerHTML = html;

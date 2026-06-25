@@ -115,6 +115,20 @@ const TIMETABLE = {
         tag: "GenEd",
         midterm: null,
         final: null
+      },
+      {
+        name: "GenEd Elective",
+        code: null,
+        section: null,
+        kind: "theory",
+        day: 5,
+        start: "09:00", end: "12:00",
+        room: null,
+        teacher: null,
+        credit: null,
+        tag: "GenEd",
+        midterm: null,
+        final: null
       }
     ]
   },
@@ -336,6 +350,34 @@ const TIMETABLE = {
         tag: null,
         midterm: "2026-08-17 13:30",
         final: "2026-10-28 13:30"
+      },
+      {
+        name: "GenEd Elective",
+        code: null,
+        section: null,
+        kind: "theory",
+        day: 5,
+        start: "09:00", end: "12:00",
+        room: null,
+        teacher: null,
+        credit: null,
+        tag: "GenEd",
+        midterm: null,
+        final: null
+      },
+      {
+        name: "GenEd Elective",
+        code: null,
+        section: null,
+        kind: "theory",
+        day: 5,
+        start: "13:00", end: "16:00",
+        room: null,
+        teacher: null,
+        credit: null,
+        tag: "GenEd",
+        midterm: null,
+        final: null
       }
     ]
   }
