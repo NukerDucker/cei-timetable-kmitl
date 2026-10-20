@@ -181,6 +181,7 @@
     margin: 0 0 8px;
   }
   .legend span { display: inline-flex; align-items: center; }
+  .legend:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .legend i {
     width: 9px; height: 9px; border-radius: 2px;
     display: inline-block; margin-right: 5px; flex: none;
@@ -333,6 +334,7 @@
   .exam-table td { padding: 10px 12px; border-top: 1px solid var(--line); vertical-align: top; }
   .exam-table .exam-course { font-weight: 500; }
   .note { color: var(--muted); font-style: italic; }
+  .exam-room { display: block; font-size: 0.72rem; color: var(--muted); }
 
   .notes {
     margin-top: 12px; padding-top: 10px;
@@ -424,7 +426,8 @@
     .exam-table td.exam-course { display: block; margin-bottom: 2px; }
     .exam-table td[data-label="Midterm"],
     .exam-table td[data-label="Final"] { margin-right: 10px; }
-    .exam-table td[data-label="Time"] { display: block; margin-top: 1px; }
+    .exam-table td[data-label="Time"] { display: none; }
+    .exam-room { display: inline; margin-left: 6px; }
     .exam-table td::before {
       content: attr(data-label) ": ";
       font-family: 'IBM Plex Sans Thai', Arial, sans-serif;
@@ -611,25 +614,25 @@ const YEARS = [
         name: "Intro to Data Analytics", code: "01276551", credits: "3(3-0-6)", color: "blue", type: "elective",
         lecturers: ["Assoc. Prof. Dr. Rathachai Chawuthai"],
         sessions: [{ day: "Mon", start: "09:00", end: "12:00", room: "ECC-610", section: "901" }],
-        exams: { midNote: "Self-arranged", final: "2026-11-02", time: "13:30–16:30" }
+        exams: { midNote: "Not listed", final: "2026-11-09", time: "13:30–16:30" }
       },
       {
         name: "UX/UI Design", code: "01276545", credits: "3(3-0-6)", color: "red", type: "elective",
         lecturers: ["Asst. Prof. Dr. Chompoonuch Tengcharoen"],
         sessions: [{ day: "Tue", start: "09:00", end: "12:00", room: "ECC-610", section: "901" }],
-        exams: { midNote: "Self-arranged", finalNote: "Self-arranged" }
+        exams: { midNote: "Self-arranged", finalNote: "Defined by Instructor", time: "By instructor" }
       },
       {
         name: "Artificial Intelligence", code: "01276342", credits: "3(3-0-6)", color: "green", type: "lecture",
         lecturers: ["Assoc. Prof. Dr. Kietikul Jearanaitanakij"],
         sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: "ECC-610", section: "901" }],
-        exams: { midNote: "Self-arranged", final: "2026-10-26", time: "13:30–16:30" }
+        exams: { midNote: "Self-arranged", final: "2026-11-02", finalRoom: "HM-302 · C3", time: "13:30–16:30" }
       },
       {
         name: "Practice of System Administration", code: "01276521", credits: "3(3-0-6)", color: "teal", type: "elective",
         lecturers: ["Dr. Parinya Ekparinya"],
         sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: "ECC-610", section: "901" }],
-        exams: { midNote: "Self-arranged", final: "2026-10-30", time: "13:30–16:30" }
+        exams: { midNote: "Self-arranged", final: "2026-11-06", finalRoom: "HM-302 · C2", time: "13:30–16:30" }
       },
       {
         name: "Microcontroller Interfacing", code: "01276314", credits: "4(3-3-8)", color: "magenta", type: "lecture",
@@ -638,20 +641,20 @@ const YEARS = [
           { day: "Wed", start: "13:00", end: "16:00", room: "ECC-610", section: "901" },
           { day: "Wed", start: "16:30", end: "19:30", room: "ECC-610", section: "1901", type: "lab" }
         ],
-        exams: { mid: "2026-08-20", final: "2026-11-04", time: "13:30–16:30" }
+        exams: { mid: "2026-08-20", midRoom: "HM-305 · C3", final: "2026-11-11", finalRoom: "HM-302 · C3", time: "13:30–16:30" }
       },
       {
         name: "Operating Systems", code: "01276324", credits: "3(3-0-6)", color: "purple", type: "lecture",
         lecturers: ["Asst. Prof. Watjanapongs Kasemsiri"],
         sessions: [{ day: "Fri", start: "09:00", end: "12:00", room: "ECC-609", section: "901" }],
-        exams: { mid: "2026-08-17", final: "2026-10-28", time: "13:30–16:30" }
+        exams: { mid: "2026-08-17", final: "2026-11-04", finalRoom: "HM-301 · C2", time: "13:30–16:30" }
       }
     ],
     notes: [
-      "Microcontroller lab section (1901): both exams self-arranged.",
+      "Microcontroller lab section (1901): final exam defined by instructor.",
       "Credits: Microcontroller 4(3-3-8); all others 3(3-0-6).",
       "All courses restricted to Computer Engineering (International).",
-      "All exams 13:30–16:30."
+      "Scheduled exams run 13:30–16:30; instructor-defined exams are marked in the table."
     ]
   }
 ];
@@ -671,7 +674,7 @@ function renderWeek(year) {
   const legend = year.courses.map((c) =>
     `<span><i class="subject-${esc(c.color)}" aria-hidden="true"></i>${esc(c.name)}</span>`
   ).join("");
-  let h = `<div class="legend">${legend}</div><div class="grid">`;
+  let h = `<div class="legend" tabindex="0" aria-label="Course color legend">${legend}</div><div class="grid">`;
 
   h += '<div class="g-corner">Time</div>';
   DAYS.forEach((d) => { h += `<div class="g-head" data-day="${d}">${d}</div>`; });
@@ -711,7 +714,8 @@ function renderWeek(year) {
 }
 
 function renderCourses(year) {
-  const cards = year.courses.map((c) => {
+  const courses = year.courses;
+  const cards = courses.map((c) => {
     const search = [
       c.name, c.code, c.credits, c.lecturers.join(" "), typeLabel(c.type),
       c.sessions.map((s) => `${s.day} ${s.start} ${s.end} ${s.room || ""}`).join(" ")
@@ -742,7 +746,7 @@ function renderCourses(year) {
 
   return `<div class="course-tools">` +
     `<input class="course-search" type="search" id="search-${year.id}" name="search-${year.id}" placeholder="Search course, code, lecturer, room" aria-label="Search courses for ${esc(year.label)}">` +
-    `<span class="count" aria-live="polite">${year.courses.length} courses</span>` +
+    `<span class="count" aria-live="polite">${courses.length} courses</span>` +
     `</div>` +
     `<div class="course-list">${cards}</div>` +
     `<p class="empty" hidden>No courses match that search.</p>`;
@@ -750,8 +754,13 @@ function renderCourses(year) {
 
 function renderExams(year) {
   const rows = year.courses.map((c) => {
-    const mid = c.exams.mid ? fmtDate(c.exams.mid) : `<span class="note">${esc(c.exams.midNote || "By instructor")}</span>`;
-    const fin = c.exams.final ? fmtDate(c.exams.final) : `<span class="note">${esc(c.exams.finalNote || "By instructor")}</span>`;
+    const room = (r) => r ? `<span class="exam-room">${esc(r)}</span>` : "";
+    const mid = c.exams.mid
+      ? fmtDate(c.exams.mid) + room(c.exams.midRoom)
+      : `<span class="note">${esc(c.exams.midNote || "By instructor")}</span>`;
+    const fin = c.exams.final
+      ? fmtDate(c.exams.final) + room(c.exams.finalRoom)
+      : `<span class="note">${esc(c.exams.finalNote || "By instructor")}</span>`;
     const sortKey = c.exams.final ? Date.parse(c.exams.final) : (c.exams.mid ? Date.parse(c.exams.mid) : Infinity);
     const time = c.exams.time || c.exams.midNote || c.exams.finalNote || "Not set";
     return { sortKey, html:
