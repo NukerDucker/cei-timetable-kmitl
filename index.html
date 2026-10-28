@@ -144,35 +144,50 @@
   }
   #theme-toggle:hover { background: var(--bg); }
 
-  #t-y1:checked ~ .wrap label[for="t-y1"],
-  #t-y2:checked ~ .wrap label[for="t-y2"],
-  #t-y3:checked ~ .wrap label[for="t-y3"],
-  #v-week:checked ~ .wrap label[for="v-week"],
-  #v-courses:checked ~ .wrap label[for="v-courses"],
-  #v-exams:checked ~ .wrap label[for="v-exams"] {
+  body:has(#tt-t1:checked) .wrap label[for="tt-t1"],
+  body:has(#tt-t2:checked) .wrap label[for="tt-t2"],
+  body:has(#t-y1:checked) .wrap label[for="t-y1"],
+  body:has(#t-y2:checked) .wrap label[for="t-y2"],
+  body:has(#t-y3:checked) .wrap label[for="t-y3"],
+  body:has(#t-y4:checked) .wrap label[for="t-y4"],
+  body:has(#v-week:checked) .wrap label[for="v-week"],
+  body:has(#v-courses:checked) .wrap label[for="v-courses"],
+  body:has(#v-exams:checked) .wrap label[for="v-exams"] {
     background: #1a1816; color: #ffffff; border-color: #1a1816;
   }
-  #t-y1:focus-visible ~ .wrap label[for="t-y1"],
-  #t-y2:focus-visible ~ .wrap label[for="t-y2"],
-  #t-y3:focus-visible ~ .wrap label[for="t-y3"],
-  #v-week:focus-visible ~ .wrap label[for="v-week"],
-  #v-courses:focus-visible ~ .wrap label[for="v-courses"],
-  #v-exams:focus-visible ~ .wrap label[for="v-exams"],
+  body:has(#tt-t1:focus-visible) .wrap label[for="tt-t1"],
+  body:has(#tt-t2:focus-visible) .wrap label[for="tt-t2"],
+  body:has(#t-y1:focus-visible) .wrap label[for="t-y1"],
+  body:has(#t-y2:focus-visible) .wrap label[for="t-y2"],
+  body:has(#t-y3:focus-visible) .wrap label[for="t-y3"],
+  body:has(#t-y4:focus-visible) .wrap label[for="t-y4"],
+  body:has(#v-week:focus-visible) .wrap label[for="v-week"],
+  body:has(#v-courses:focus-visible) .wrap label[for="v-courses"],
+  body:has(#v-exams:focus-visible) .wrap label[for="v-exams"],
   #theme-toggle:focus-visible,
   .course-search:focus-visible,
   .notes summary:focus-visible {
     outline: 2px solid var(--focus); outline-offset: 2px;
   }
 
+  .tv { display: none; }
+  body:has(#tt-t1:checked) .wrap .tv1,
+  body:has(#tt-t2:checked) .wrap .tv2 { display: inline; }
+
   .panel { display: none; }
-  #t-y1:checked ~ .wrap #p-y1,
-  #t-y2:checked ~ .wrap #p-y2,
-  #t-y3:checked ~ .wrap #p-y3 { display: block; }
+  body:has(#tt-t1:checked):has(#t-y1:checked) .wrap #p-t1-y1,
+  body:has(#tt-t1:checked):has(#t-y2:checked) .wrap #p-t1-y2,
+  body:has(#tt-t1:checked):has(#t-y3:checked) .wrap #p-t1-y3,
+  body:has(#tt-t1:checked):has(#t-y4:checked) .wrap #p-t1-y4,
+  body:has(#tt-t2:checked):has(#t-y1:checked) .wrap #p-t2-y1,
+  body:has(#tt-t2:checked):has(#t-y2:checked) .wrap #p-t2-y2,
+  body:has(#tt-t2:checked):has(#t-y3:checked) .wrap #p-t2-y3,
+  body:has(#tt-t2:checked):has(#t-y4:checked) .wrap #p-t2-y4 { display: block; }
 
   .view { display: none; }
-  #v-week:checked ~ .wrap .view-week,
-  #v-courses:checked ~ .wrap .view-courses,
-  #v-exams:checked ~ .wrap .view-exams { display: block; }
+  body:has(#v-week:checked) .wrap .view-week,
+  body:has(#v-courses:checked) .wrap .view-courses,
+  body:has(#v-exams:checked) .wrap .view-exams { display: block; }
 
   /* --- week view --- */
   .legend {
@@ -282,7 +297,7 @@
     padding: 12px 14px;
   }
   .cc-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; }
-  .cc-top h3 {
+  .cc-top h2 {
     font-family: 'IBM Plex Sans Thai', Arial, sans-serif;
     font-size: 0.9375rem; font-weight: 600; line-height: 1.25;
   }
@@ -449,12 +464,17 @@
 </style>
 </head>
 <body>
+<nav aria-label="Timetable display options">
+<input class="sr" type="radio" name="term" id="tt-t1" checked>
+<input class="sr" type="radio" name="term" id="tt-t2">
 <input class="sr" type="radio" name="yr" id="t-y1" checked>
 <input class="sr" type="radio" name="yr" id="t-y2">
 <input class="sr" type="radio" name="yr" id="t-y3">
+<input class="sr" type="radio" name="yr" id="t-y4">
 <input class="sr" type="radio" name="view" id="v-week" checked>
 <input class="sr" type="radio" name="view" id="v-courses">
 <input class="sr" type="radio" name="view" id="v-exams">
+</nav>
 
 <div class="wrap shell">
   <header class="masthead">
@@ -464,7 +484,7 @@
     </div>
     <div class="card stat-card">
       <span class="card-label">Semester</span>
-      <span class="card-value">1/2569</span>
+      <span class="card-value"><span class="tv tv1">1/2569</span><span class="tv tv2">2/2569</span></span>
     </div>
     <div class="card accent-card">
       <span class="card-label">International Program</span>
@@ -473,10 +493,15 @@
   </header>
 
   <nav class="controls" aria-label="Timetable controls">
+    <div class="tabs" role="group" aria-label="Term">
+      <label for="tt-t1">1/2569</label>
+      <label for="tt-t2">2/2569</label>
+    </div>
     <div class="tabs" role="group" aria-label="Year">
       <label for="t-y1">1st Year</label>
       <label for="t-y2">2nd Year</label>
       <label for="t-y3">3rd Year</label>
+      <label for="t-y4">4th Year</label>
     </div>
     <div class="tabs" role="group" aria-label="View">
       <label for="v-week">Week</label>
@@ -497,7 +522,11 @@ const DAY_START = 7 * 60;
 const SLOT = 30;
 const SLOTS = 25;
 
-const YEARS = [
+const TERMS = [
+  {
+    id: "t1",
+    label: "1/2569",
+    years: [
   {
     id: "y1",
     label: "1st Year",
@@ -657,6 +686,228 @@ const YEARS = [
       "Scheduled exams run 13:30–16:30; instructor-defined exams are marked in the table."
     ]
   }
+    ]
+  },
+  {
+    id: "t2",
+    label: "2/2569",
+    years: [
+      {
+        id: "y1",
+        label: "1st Year",
+        courses: [
+          {
+            name: "General Physics 2", code: "01006725", credits: "3(3-0-6)", color: "blue", type: "lecture",
+            lecturers: ["Mr. Harihara Ramamoorthy"],
+            sessions: [{ day: "Mon", start: "08:45", end: "12:30", room: null, section: "908" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Advanced Calculus", code: "01006711", credits: "3(3-0-6)", color: "teal", type: "lecture",
+            lecturers: ["Dr. Warut", "Dr. Ganni"],
+            sessions: [{ day: "Tue", start: "08:45", end: "12:30", room: null, section: "908" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "General Physics Laboratory 2", code: "01006726", credits: "1(0-3-2)", color: "green", type: "lab",
+            lecturers: ["Mr. Nagoor Basha Shaik"],
+            sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: null, section: "917" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Digital System Fundamentals", code: "01276112", credits: "4(3-3-8)", color: "red", type: "lecture",
+            lecturers: ["Asst. Prof. Sorayut Glomglome"],
+            sessions: [
+              { day: "Thu", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" },
+              { day: "Thu", start: "16:30", end: "19:30", room: "704 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Object-Oriented Programming", code: "01276131", credits: "4(3-3-8)", color: "purple", type: "lecture",
+            lecturers: ["ธนัญชัย วัจนพงศ์"],
+            sessions: [
+              { day: "Fri", start: "09:00", end: "12:00", room: "609 (ECC)", section: "901" },
+              { day: "Fri", start: "13:00", end: "16:00", room: "609 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Charm School", code: "96641001", credits: "—", color: "magenta", type: "gened",
+            lecturers: ["Faculty"],
+            sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: null, section: null }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Academic Reading and Writing", code: "96644005", credits: "—", color: "magenta", type: "gened",
+            lecturers: ["Faculty"],
+            sessions: [
+              { day: "Tue", start: "17:00", end: "19:00", room: null, section: null },
+              { day: "Wed", start: "17:00", end: "19:00", room: null, section: null }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          }
+        ],
+        notes: [
+          "Theory lectures run 08:45–10:15 + 10:30–12:30 where the sheet states a split; otherwise the 09:00–12:00 band.",
+          "Practice sections (19xx) are the lab session of the same course; Digital System Fundamentals lab uses room 704 (Vivado).",
+          "Charm School and Academic Reading and Writing are GenEd courses — credits not on the registration sheet.",
+          "Exam dates for 2/2569 are not yet published."
+        ]
+      },
+      {
+        id: "y2",
+        label: "2nd Year",
+        courses: [
+          {
+            name: "Differential Equations", code: "01006717", credits: "3(3-0-6)", color: "teal", type: "lecture",
+            lecturers: ["Dr. Tossaporn"],
+            sessions: [{ day: "Mon", start: "08:45", end: "12:30", room: null, section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Computer Architecture and Organization", code: "01276213", credits: "4(3-3-8)", color: "red", type: "lecture",
+            lecturers: ["Mr. Surin Kittitornkun"],
+            sessions: [
+              { day: "Mon", start: "13:00", end: "16:00", room: "610 (ECC)", section: "901" },
+              { day: "Mon", start: "16:30", end: "19:30", room: "502 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Software Development Process", code: "01276232", credits: "4(3-3-8)", color: "green", type: "lecture",
+            lecturers: ["ชุติเมษฏ์"],
+            sessions: [
+              { day: "Tue", start: "13:00", end: "16:00", room: "610 (ECC)", section: "901" },
+              { day: "Wed", start: "13:00", end: "16:00", room: "610 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Web Programming", code: "01276233", credits: "4(3-3-8)", color: "purple", type: "lecture",
+            lecturers: ["Mr. Rathachai Chawuthai"],
+            sessions: [
+              { day: "Wed", start: "09:00", end: "12:00", room: "610 (ECC)", section: "901" },
+              { day: "Wed", start: "16:30", end: "19:30", room: "610 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Introduction to Statistics", code: "01276207", credits: "4(3-3-8)", color: "blue", type: "lecture",
+            lecturers: ["Assoc. Prof. Dr. Sakchai Thipchaksurat"],
+            sessions: [
+              { day: "Fri", start: "09:00", end: "12:00", room: "610 (ECC)", section: "901" },
+              { day: "Fri", start: "13:00", end: "16:00", room: "610 (ECC)", section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          }
+        ],
+        notes: [
+          "Computer Architecture practice (1901) sits Mon 16:30–19:30; Software Development Process practice (1901) Wed 13:00–16:00.",
+          "Credits: Computer Architecture, SDP, Web Programming, Intro to Statistics 4(3-3-8); Differential Equations 3(3-0-6).",
+          "All courses restricted to Computer Engineering (International).",
+          "Exam dates for 2/2569 are not yet published."
+        ]
+      },
+      {
+        id: "y3",
+        label: "3rd Year",
+        courses: [
+          {
+            name: "Advanced Database Systems", code: "01276535", credits: "3(3-0-6)", color: "teal", type: "elective",
+            lecturers: ["ศุภมิตร"],
+            sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Theory of Computation", code: "01276326", credits: "3(3-0-6)", color: "blue", type: "lecture",
+            lecturers: ["Assoc. Prof. Dr. Kietikul Jearanaitanakij"],
+            sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: "609 (ECC)", section: "901" }],
+            exams: { midNote: "ไม่สอบกลางภาค (no midterm)", finalNote: "Not yet published" }
+          },
+          {
+            name: "Information and Computer Security", code: "01276325", credits: "3(3-0-6)", color: "red", type: "lecture",
+            lecturers: ["Mr. Phongsak Keeratiwintakorn"],
+            sessions: [{ day: "Wed", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Machine Learning", code: "01276343", credits: "3(3-0-6)", color: "green", type: "lecture",
+            lecturers: ["Mr. Jirayu Petchhan"],
+            sessions: [{ day: "Thu", start: "09:00", end: "12:00", room: "609 (ECC)", section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Computer Engineering Project Preparation", code: "01276390", credits: "2(1-3-2)", color: "purple", type: "lecture",
+            lecturers: ["Mr. Kanut Tangtisanon"],
+            sessions: [
+              { day: "Thu", start: "16:30", end: "19:30", room: null, section: "901" },
+              { day: "Sat", start: "16:30", end: "19:30", room: null, section: "1901", type: "lab" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Introduction to Cloud Computing", code: "01276722", credits: "3(3-0-6)", color: "magenta", type: "elective",
+            lecturers: ["Dr. Parinya Ekparinya"],
+            sessions: [{ day: "Fri", start: "09:00", end: "12:00", room: "810 (ECC)", section: "901" }],
+            exams: { midNote: "ไม่สอบกลางภาค (no midterm)", finalNote: "Not yet published" }
+          }
+        ],
+        notes: [
+          "Computer Engineering Project Preparation has a Saturday practice session (1901, 16:30–19:30).",
+          "Theory of Computation and Introduction to Cloud Computing carry 'ไม่สอบกลางภาค' (no midterm) on the sheet.",
+          "Advanced Database Systems and Intro to Cloud Computing are 01276xxx electives.",
+          "Exam dates for 2/2569 are not yet published."
+        ]
+      },
+      {
+        id: "y4",
+        label: "4th Year",
+        courses: [
+          {
+            name: "Capstone Design Project 2", code: "01276992", credits: "3(0-9-5)", color: "red", type: "elective",
+            lecturers: ["TBA"],
+            sessions: [
+              { day: "Mon", start: "16:30", end: "19:30", room: null, section: "1901" },
+              { day: "Tue", start: "16:30", end: "19:30", room: null, section: "1901" },
+              { day: "Wed", start: "16:30", end: "19:30", room: null, section: "1901" }
+            ],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Augmented Reality", code: "01276764", credits: "3(3-0-6)", color: "green", type: "elective",
+            lecturers: ["สุรัสชัย ดวงเทพ", "Mr. Jirayu Petchhan"],
+            sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: "608 (ECC)", section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Deep Learning", code: "01276554", credits: "3(3-0-6)", color: "blue", type: "elective",
+            lecturers: ["Assoc. Prof. Dr. Kietikul Jearanaitanakij"],
+            sessions: [{ day: "Wed", start: "13:00", end: "16:00", room: null, section: "901" }],
+            exams: { midNote: "ไม่สอบกลางภาค (no midterm)", finalNote: "Not yet published" }
+          },
+          {
+            name: "Natural Language Processing", code: "01276755", credits: "3(3-0-6)", color: "teal", type: "elective",
+            lecturers: ["Mr. Rathachai Chawuthai"],
+            sessions: [{ day: "Wed", start: "13:00", end: "16:00", room: "608 (ECC)", section: "901" }],
+            exams: { midNote: "Not yet published", finalNote: "Not yet published" }
+          },
+          {
+            name: "Introduction to Cloud Computing", code: "01276722", credits: "3(3-0-6)", color: "magenta", type: "elective",
+            lecturers: ["Dr. Parinya Ekparinya"],
+            sessions: [{ day: "Fri", start: "09:00", end: "12:00", room: "608 (ECC)", section: "901" }],
+            exams: { midNote: "ไม่สอบกลางภาค (no midterm)", finalNote: "Not yet published" }
+          }
+        ],
+        notes: [
+          "Deep Learning (609) and Natural Language Processing (608) share Wed 13:00–16:00 — pick one; both are electives.",
+          "Introduction to Cloud Computing repeats the Year 3 course — the sheet says register under the Year 3 international timetable.",
+          "Capstone Design Project 2 runs Mon/Tue/Wed evenings (1901).",
+          "Exam dates for 2/2569 are not yet published."
+        ]
+      }
+    ]
+  }
 ];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -671,13 +922,16 @@ const fmtDate = (iso) => {
 const typeLabel = (t) => ({ lecture: "Lecture", lab: "Lab", elective: "Elective", gened: "Gen Ed" }[t] || "Lecture");
 
 function renderWeek(year) {
+  const hasSat = year.courses.some((c) => c.sessions.some((s) => s.day === "Sat"));
+  const days = hasSat ? [...DAYS, "Sat"] : DAYS;
   const legend = year.courses.map((c) =>
     `<span><i class="subject-${esc(c.color)}" aria-hidden="true"></i>${esc(c.name)}</span>`
   ).join("");
-  let h = `<div class="legend" tabindex="0" aria-label="Course color legend">${legend}</div><div class="grid">`;
+  let h = `<div class="legend" tabindex="0" aria-label="Course color legend">${legend}</div>` +
+    `<div class="grid" style="grid-template-columns:64px repeat(${days.length}, minmax(0,1fr))">`;
 
   h += '<div class="g-corner">Time</div>';
-  DAYS.forEach((d) => { h += `<div class="g-head" data-day="${d}">${d}</div>`; });
+  days.forEach((d) => { h += `<div class="g-head" data-day="${d}">${d}</div>`; });
   for (let r = 0; r < SLOTS; r++) {
     const minute = DAY_START + r * SLOT;
     if (minute % 60 !== 0) continue;
@@ -687,20 +941,34 @@ function renderWeek(year) {
   const lunchRow = (12 * 60 - DAY_START) / SLOT + 2;
   h += `<div class="g-lunch" style="grid-row:${lunchRow} / ${lunchRow + 2}">Lunch</div>`;
 
-  DAYS.forEach((d, i) => {
+  days.forEach((d, i) => {
     const sessions = [];
     year.courses.forEach((c) => c.sessions.forEach((s) => {
       if (s.day === d) sessions.push({ ...s, course: c });
     }));
     sessions.sort((a, b) => toMin(a.start) - toMin(b.start));
-    h += `<div class="g-day" data-day="${d}" style="grid-column:${i + 2}">`;
-    sessions.forEach((s) => {
+    const laneEnds = [];
+    const placed = sessions.map((s) => {
+      let lane = laneEnds.findIndex((end) => end <= toMin(s.start));
+      if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+      laneEnds[lane] = toMin(s.end);
+      return { session: s, lane };
+    });
+    const cols = laneEnds.length;
+    const overlaps = (s) => sessions.filter((o) =>
+      toMin(o.start) < toMin(s.end) && toMin(s.start) < toMin(o.end)).length;
+    h += `<div class="g-day" data-day="${d}" style="grid-column:${i + 2}` +
+      (cols > 1 ? `;grid-template-columns:repeat(${cols}, minmax(0,1fr))` : "") + `">`;
+    placed.forEach(({ session: s, lane }) => {
       const start = toMin(s.start);
       const snapped = DAY_START + Math.floor((start - DAY_START) / SLOT) * SLOT;
       const localRow = (snapped - DAY_START) / SLOT + 1;
       const span = Math.max(1, Math.round((toMin(s.end) - snapped) / SLOT));
       const type = s.type || s.course.type;
-      h += `<div class="g-block type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}">` +
+      const laneStyle = cols > 1
+        ? (overlaps(s) > 1 ? `;grid-column:${lane + 1}` : `;grid-column:1 / -1`)
+        : "";
+      h += `<div class="g-block type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
@@ -713,7 +981,7 @@ function renderWeek(year) {
   return h;
 }
 
-function renderCourses(year) {
+function renderCourses(year, panelId) {
   const courses = year.courses;
   const cards = courses.map((c) => {
     const search = [
@@ -734,7 +1002,7 @@ function renderCourses(year) {
       : `Exams: ${esc(mid || "By instructor")}`;
 
     return `<article class="course-card" data-search="${esc(search)}">` +
-      `<div class="cc-top"><h3><span class="cc-dot subject-${esc(c.color)}" aria-hidden="true"></span>${esc(c.name)}</h3>` +
+      `<div class="cc-top"><h2><span class="cc-dot subject-${esc(c.color)}" aria-hidden="true"></span>${esc(c.name)}</h2>` +
       (c.type !== "lecture" ? `<span class="tag">${typeLabel(c.type)}</span>` : "") +
       `</div>` +
       `<p class="cc-code">${esc(c.code)} &middot; ${esc(c.credits)}</p>` +
@@ -745,7 +1013,7 @@ function renderCourses(year) {
   }).join("");
 
   return `<div class="course-tools">` +
-    `<input class="course-search" type="search" id="search-${year.id}" name="search-${year.id}" placeholder="Search course, code, lecturer, room" aria-label="Search courses for ${esc(year.label)}">` +
+    `<input class="course-search" type="search" id="search-${panelId}" name="search-${panelId}" placeholder="Search course, code, lecturer, room" aria-label="Search courses for ${esc(year.label)}">` +
     `<span class="count" aria-live="polite">${courses.length} courses</span>` +
     `</div>` +
     `<div class="course-list">${cards}</div>` +
@@ -775,21 +1043,33 @@ function renderExams(year) {
     `<tbody>${rows}</tbody></table>`;
 }
 
-const panels = YEARS.map((year) => {
-  const notes = year.notes.map((n) => `<li>${esc(n)}</li>`).join("");
-  return `<section class="panel" id="p-${year.id}" aria-label="${esc(year.label)}">` +
-    `<div class="view view-week">${renderWeek(year)}</div>` +
-    `<div class="view view-courses">${renderCourses(year)}</div>` +
-    `<div class="view view-exams">${renderExams(year)}</div>` +
-    `<details class="notes"><summary>Notes on credits and exam arrangements</summary><ul>${notes}</ul></details>` +
-    `</section>`;
-}).join("");
+const YEAR_IDS = ["y1", "y2", "y3", "y4"];
+const YEAR_LABELS = { y1: "1st Year", y2: "2nd Year", y3: "3rd Year", y4: "4th Year" };
+const panels = TERMS.map((term) =>
+  YEAR_IDS.map((yid) => {
+    const year = term.years.find((y) => y.id === yid);
+    const pid = `p-${term.id}-${yid}`;
+    const aria = `${term.label} · ${YEAR_LABELS[yid]}`;
+    if (!year) {
+      return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
+        `<p class="empty">No ${YEAR_LABELS[yid].toLowerCase()} timetable published for ${esc(term.label)}.</p></section>`;
+    }
+    const notes = year.notes.map((n) => `<li>${esc(n)}</li>`).join("");
+    return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
+      `<div class="view view-week">${renderWeek(year)}</div>` +
+      `<div class="view view-courses">${renderCourses(year, pid)}</div>` +
+      `<div class="view view-exams">${renderExams(year)}</div>` +
+      `<details class="notes"><summary>Notes on credits and exam arrangements</summary><ul>${notes}</ul></details>` +
+      `</section>`;
+  }).join("")
+).join("");
 
 document.getElementById("panels").innerHTML = panels;
 
 // Search: filters the visible year's course cards.
 document.querySelectorAll(".panel").forEach((panel) => {
   const input = panel.querySelector(".course-search");
+  if (!input) return;
   const cards = Array.from(panel.querySelectorAll(".course-card"));
   const count = panel.querySelector(".count");
   const empty = panel.querySelector(".empty");
