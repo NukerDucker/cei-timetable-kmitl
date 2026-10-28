@@ -328,6 +328,7 @@
   .s-day { font-weight: 600; min-width: 32px; }
   .s-room { color: var(--muted); }
   .cc-lect { font-size: 0.8125rem; margin-top: 6px; }
+  .cc-prereq { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
   .cc-exam {
     font-size: 0.75rem; color: var(--muted);
     margin-top: 6px; padding-top: 6px;
@@ -647,6 +648,7 @@ const TERMS = [
       },
       {
         name: "UX/UI Design", code: "01276545", credits: "3(3-0-6)", color: "red", type: "elective",
+        prereq: { title: "Web Programming", met: true },
         lecturers: ["Asst. Prof. Dr. Chompoonuch Tengcharoen"],
         sessions: [{ day: "Tue", start: "09:00", end: "12:00", room: "ECC-610", section: "901" }],
         exams: { midNote: "Self-arranged", finalNote: "Defined by Instructor", time: "By instructor" }
@@ -681,6 +683,7 @@ const TERMS = [
     ],
     notes: [
       "Microcontroller lab section (1901): final exam defined by instructor.",
+      "UX/UI Design requires Web Programming — passed in Year 2.",
       "Credits: Microcontroller 4(3-3-8); all others 3(3-0-6).",
       "All courses restricted to Computer Engineering (International).",
       "Scheduled exams run 13:30–16:30; instructor-defined exams are marked in the table."
@@ -815,6 +818,7 @@ const TERMS = [
         courses: [
           {
             name: "Advanced Database Systems", code: "01276535", credits: "3(3-0-6)", color: "teal", type: "elective",
+            prereq: { title: "Database Systems", met: true },
             lecturers: ["ศุภมิตร"],
             sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" }],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
@@ -855,6 +859,7 @@ const TERMS = [
         ],
         notes: [
           "Computer Engineering Project Preparation has a Saturday practice session (1901, 16:30–19:30).",
+          "Advanced Database Systems requires Database Systems — passed in Year 2.",
           "Theory of Computation and Introduction to Cloud Computing carry 'ไม่สอบกลางภาค' (no midterm) on the sheet.",
           "Advanced Database Systems and Intro to Cloud Computing are 01276xxx electives.",
           "Exam dates for 2/2569 are not yet published."
@@ -882,12 +887,14 @@ const TERMS = [
           },
           {
             name: "Deep Learning", code: "01276554", credits: "3(3-0-6)", color: "blue", type: "elective",
+            prereq: { title: "Machine Learning", met: true },
             lecturers: ["Assoc. Prof. Dr. Kietikul Jearanaitanakij"],
             sessions: [{ day: "Wed", start: "13:00", end: "16:00", room: null, section: "901" }],
             exams: { midNote: "ไม่สอบกลางภาค (no midterm)", finalNote: "Not yet published" }
           },
           {
             name: "Natural Language Processing", code: "01276755", credits: "3(3-0-6)", color: "teal", type: "elective",
+            prereq: { title: "Machine Learning", met: true },
             lecturers: ["Mr. Rathachai Chawuthai"],
             sessions: [{ day: "Wed", start: "13:00", end: "16:00", room: "608 (ECC)", section: "901" }],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
@@ -901,6 +908,7 @@ const TERMS = [
         ],
         notes: [
           "Deep Learning (609) and Natural Language Processing (608) share Wed 13:00–16:00 — pick one; both are electives.",
+          "Deep Learning and Natural Language Processing require Machine Learning — passed in Year 3.",
           "Introduction to Cloud Computing repeats the Year 3 course — the sheet says register under the Year 3 international timetable.",
           "Capstone Design Project 2 runs Mon/Tue/Wed evenings (1901).",
           "Exam dates for 2/2569 are not yet published."
@@ -965,6 +973,10 @@ function renderWeek(year) {
       const localRow = (snapped - DAY_START) / SLOT + 1;
       const span = Math.max(1, Math.round((toMin(s.end) - snapped) / SLOT));
       const type = s.type || s.course.type;
+      const pre = s.course.prereq;
+      const tag = pre
+        ? `<span class="gb-tag" aria-label="${typeLabel(type)}. Prerequisite: ${esc(pre.title)} — ${pre.met ? "passed" : "not yet passed"}">Prereq ${pre.met ? "✓" : "✗"}</span>`
+        : (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "");
       const laneStyle = cols > 1
         ? (overlaps(s) > 1 ? `;grid-column:${lane + 1}` : `;grid-column:1 / -1`)
         : "";
@@ -972,7 +984,7 @@ function renderWeek(year) {
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
-        (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "") +
+        tag +
         `</div>`;
     });
     h += "</div>";
@@ -986,7 +998,8 @@ function renderCourses(year, panelId) {
   const cards = courses.map((c) => {
     const search = [
       c.name, c.code, c.credits, c.lecturers.join(" "), typeLabel(c.type),
-      c.sessions.map((s) => `${s.day} ${s.start} ${s.end} ${s.room || ""}`).join(" ")
+      c.sessions.map((s) => `${s.day} ${s.start} ${s.end} ${s.room || ""}`).join(" "),
+      c.prereq ? `prerequisite ${c.prereq.title} ${c.prereq.met ? "passed" : "not passed"}` : ""
     ].join(" ").toLowerCase();
 
     const sessions = c.sessions.map((s) => {
@@ -1008,6 +1021,7 @@ function renderCourses(year, panelId) {
       `<p class="cc-code">${esc(c.code)} &middot; ${esc(c.credits)}</p>` +
       `<ul class="cc-sessions">${sessions}</ul>` +
       `<p class="cc-lect">${esc(c.lecturers.join(" · "))}</p>` +
+      (c.prereq ? `<p class="cc-prereq">Prerequisite: ${esc(c.prereq.title)} — ${c.prereq.met ? "passed" : "not yet passed"}</p>` : "") +
       `<p class="cc-exam">${examLine}</p>` +
       `</article>`;
   }).join("");
