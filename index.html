@@ -973,10 +973,6 @@ function renderWeek(year) {
       const localRow = (snapped - DAY_START) / SLOT + 1;
       const span = Math.max(1, Math.round((toMin(s.end) - snapped) / SLOT));
       const type = s.type || s.course.type;
-      const pre = s.course.prereq;
-      const tag = pre
-        ? `<span class="gb-tag" aria-label="${typeLabel(type)}. Prerequisite: ${esc(pre.title)} — ${pre.met ? "passed" : "not yet passed"}">Prereq ${pre.met ? "✓" : "✗"}</span>`
-        : (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "");
       const laneStyle = cols > 1
         ? (overlaps(s) > 1 ? `;grid-column:${lane + 1}` : `;grid-column:1 / -1`)
         : "";
@@ -984,7 +980,7 @@ function renderWeek(year) {
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
-        tag +
+        (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "") +
         `</div>`;
     });
     h += "</div>";
