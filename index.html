@@ -205,7 +205,7 @@
   .grid {
     display: grid;
     grid-template-columns: 64px repeat(5, minmax(0, 1fr));
-    grid-template-rows: var(--head-h) repeat(25, var(--row-h));
+    grid-template-rows: var(--head-h) repeat(26, var(--row-h));
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
   }
@@ -1070,7 +1070,13 @@ function selectCuratedRows(rows, course, classYear) {
     anchor = chooseSection(valid);
   }
   if (!anchor) return null;
-  return valid.filter((r) => r.section === anchor || r.sec_pair === anchor);
+  const keep = new Set([anchor]);
+  for (const row of valid.filter((r) => r.section === anchor)) {
+    if (row.sec_pair) keep.add(row.sec_pair);
+    const partner = valid.find((r) => r.sec_pair === row.section);
+    if (partner) keep.add(partner.section);
+  }
+  return valid.filter((r) => keep.has(r.section));
 }
 
 function sessionsFromRows(rows) {
@@ -1125,22 +1131,30 @@ function teacherNames(rows) {
   return [...new Set(names)];
 }
 
+function apiDate(value) {
+  return value && !String(value).startsWith("0000-00-00") ? value : null;
+}
+
 function examPatch(rows, curated = {}) {
   const lectures = rows.filter((r) => r.lect_or_prac !== "ป");
-  const row = lectures.find((r) => r.midterm_start_date_time || r.final_start_date_time) ||
-    rows.find((r) => r.midterm_start_date_time || r.final_start_date_time);
+  const row = lectures.find((r) => apiDate(r.midterm_start_date_time) || apiDate(r.final_start_date_time)) ||
+    rows.find((r) => apiDate(r.midterm_start_date_time) || apiDate(r.final_start_date_time));
   const exams = { ...curated };
   if (!row) return exams;
-  if (row.midterm_start_date_time) {
-    exams.mid = row.midterm_start_date_time.slice(0, 10);
+  const mid = apiDate(row.midterm_start_date_time);
+  const final = apiDate(row.final_start_date_time);
+  const midEnd = apiDate(row.midterm_end_date_time);
+  const finalEnd = apiDate(row.final_end_date_time);
+  if (mid) {
+    exams.mid = mid.slice(0, 10);
     delete exams.midNote;
   }
-  if (row.final_start_date_time) {
-    exams.final = row.final_start_date_time.slice(0, 10);
+  if (final) {
+    exams.final = final.slice(0, 10);
     delete exams.finalNote;
   }
-  const start = row.final_start_date_time || row.midterm_start_date_time;
-  const end = row.final_end_date_time || row.midterm_end_date_time;
+  const start = final || mid;
+  const end = final ? finalEnd : midEnd;
   if (start && end) exams.time = hhmm(start.slice(11)) + "–" + hhmm(end.slice(11));
   return exams;
 }
@@ -1167,8 +1181,14 @@ function makeCourse(code, rows, curated) {
 }
 
 function mergeCourse(curated, rows) {
-  const sessions = sessionsFromRows(rows);
-  if (!sessions.length) return curated;
+  const apiSessions = sessionsFromRows(rows);
+  if (!apiSessions.length) return curated;
+  const sessions = apiSessions.map((s) => {
+    if (s.room) return s;
+    const match = curated.sessions.find((c) => c.day === s.day && c.start === s.start) ||
+      curated.sessions.find((c) => c.day === s.day && c.section === s.section);
+    return match && match.room ? { ...s, room: match.room } : s;
+  });
   return {
     ...curated,
     credits: rows[0].credit_str || curated.credits,
@@ -1184,6 +1204,7 @@ function mergeTerm(term, rows) {
     if (!byCode.has(row.subject_id)) byCode.set(row.subject_id, []);
     byCode.get(row.subject_id).push(row);
   }
+  const seenCodes = new Set(term.years.flatMap((y) => y.courses.map((c) => c.code)));
   const years = term.years.map((year) => {
     const n = Number(year.id.slice(1));
     const known = new Set(year.courses.map((c) => c.code));
@@ -1193,7 +1214,7 @@ function mergeTerm(term, rows) {
       return selected ? mergeCourse(course, selected) : course;
     });
     for (const [code, candidates] of byCode) {
-      if (!code.startsWith("01276") || known.has(code)) continue;
+      if (!code.startsWith("01276") || known.has(code) || seenCodes.has(code)) continue;
       const inClass = candidates.filter((r) => r.classYear === String(n) && schedulable(r));
       if (!inClass.length) continue;
       const anchor = chooseSection(inClass);
@@ -1202,6 +1223,7 @@ function mergeTerm(term, rows) {
       if (course && course.sessions.length) {
         courses.push(course);
         known.add(code);
+        seenCodes.add(code);
       }
     }
     return { ...year, courses };
@@ -1288,7 +1310,8 @@ async function loadLiveData() {
   setDataStatus(cached ? "Checking for updates…" : "Loading live schedule…");
   const results = await Promise.allSettled(TERM_CONFIG.map(async (config) => ({ config, rows: await fetchTerm(config) })));
   let updated = 0;
-  const liveTerms = CURATED_TERMS.map((term) => {
+  const baseTerms = cached ? cached.terms : CURATED_TERMS;
+  const liveTerms = baseTerms.map((term) => {
     const hit = results.find((r) => r.status === "fulfilled" && r.value.config.label === term.label);
     if (!hit) return term;
     updated++;
@@ -1303,7 +1326,7 @@ async function loadLiveData() {
   renderAll();
   restoreUi(ui);
   if (updated === TERM_CONFIG.length) writeCache();
-  setDataStatus("Live · updated " + stamp(Date.now()));
+  setDataStatus((updated === TERM_CONFIG.length ? "Live · updated " : "Live · partial update ") + stamp(Date.now()));
 }
 
 function renderWeek(year) {
