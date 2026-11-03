@@ -378,27 +378,29 @@
   }
 
   @media (max-width: 640px) {
-    body { padding: 12px 12px 16px; }
-    .masthead { grid-template-columns: 1fr; gap: 6px; margin-bottom: 6px; }
+    body { padding: 10px 12px 12px; }
+    .data-status { min-height: 0; margin: 0; font-size: 0.62rem; line-height: 1.2; }
+    .masthead { grid-template-columns: 1fr; gap: 6px; margin-bottom: 4px; }
     .stat-card, .accent-card { display: none; }
     .card { padding: 10px 12px; }
     .kicker { display: none; }
     h1 { font-size: 1.35rem; }
-    .controls { gap: 4px 8px; padding: 6px 8px; margin-bottom: 6px; top: 8px; }
+    .controls { gap: 4px 8px; padding: 6px 8px; margin-bottom: 4px; top: 8px; }
     .tabs + .tabs {
       border-left: 0; padding-left: 0;
       border-top: 1px solid var(--line-strong); padding-top: 4px;
     }
     .legend {
       flex-wrap: nowrap; overflow-x: auto; white-space: nowrap;
-      gap: 0 14px; font-size: 0.68rem; margin: 0 0 4px;
+      gap: 0 14px; font-size: 0.68rem; margin: 0 0 1px;
       padding-bottom: 2px;
     }
     .tabs { gap: 4px; }
     .tabs label { min-height: 44px; padding: 8px 12px; font-size: 0.78rem; }
     #theme-toggle { min-height: 44px; padding: 8px 10px; margin-left: 0; }
     .course-search { min-height: 44px; }
-    .course-card { padding: 11px 12px; }
+    .course-list { gap: 8px; }
+    .course-card { padding: 10px 12px; }
     .grid { display: block; border-right: 0; }
     .g-corner, .g-head, .g-time, .g-lunch { display: none; }
     .g-day {
@@ -449,15 +451,20 @@
       font-family: 'IBM Plex Sans Thai', Arial, sans-serif;
       font-size: 0.72rem; color: var(--muted);
     }
-    .notes { margin-top: 8px; padding-top: 6px; }
+    .notes { margin-top: 2px; padding-top: 2px; }
     .notes summary { min-height: 44px; }
+  }
+
+  .data-status {
+    min-height: 18px; margin: -2px 0 8px;
+    font-size: 0.7rem; line-height: 1.3; color: var(--muted);
   }
 
   @media print {
     :root { --row-h: 22px; --head-h: 34px; }
     body { padding: 0; background: #fff; color: #000; }
     .shell { border: 0; border-radius: 0; padding: 0; background: #fff; }
-    .controls, .legend, .course-tools, .notes { display: none; }
+    .controls, .legend, .course-tools, .notes, .data-status { display: none; }
     .wrap { max-width: none; }
     .grid { min-width: 0; }
     .g-block, .tag, .masthead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -512,6 +519,8 @@
     <button id="theme-toggle" type="button">Dark mode</button>
   </nav>
 
+  <p id="data-status" class="data-status" role="status" aria-live="polite" aria-atomic="true">Loading schedule…</p>
+
   <noscript><p class="noscript">This timetable renders from its schedule data with JavaScript. Enable JavaScript to view it.</p></noscript>
 
   <main id="panels"></main>
@@ -521,9 +530,9 @@
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const DAY_START = 7 * 60;
 const SLOT = 30;
-const SLOTS = 25;
+const SLOTS = 26;
 
-const TERMS = [
+const CURATED_TERMS = [
   {
     id: "t1",
     label: "1/2569",
@@ -539,25 +548,25 @@ const TERMS = [
           { day: "Mon", start: "09:00", end: "12:00", room: "ECC-608", section: "905" },
           { day: "Tue", start: "13:00", end: "16:00", room: "502 (ECC)", section: "1905", type: "lab" }
         ],
-        exams: { mid: "2026-08-17", final: "2026-10-26", time: "09:30–12:30" }
+        exams: { mid: "2026-08-17", final: "2026-11-02", time: "09:30–12:30" }
       },
       {
         name: "General Physics Laboratory 1", code: "01006724", credits: "1(0-3-2)", color: "green", type: "lab",
         lecturers: ["Mr. Nagoor Basha Shaik"],
-        sessions: [{ day: "Mon", start: "13:00", end: "16:00", room: null, section: "914" }],
+        sessions: [{ day: "Mon", start: "13:00", end: "16:00", room: "HM-504", section: "914" }],
         exams: { midNote: "By instructor", finalNote: "By instructor" }
       },
       {
         name: "General Physics 1", code: "01006723", credits: "3(3-0-6)", color: "blue", type: "lecture",
         lecturers: ["Mr. Harihara Ramamoorthy"],
-        sessions: [{ day: "Tue", start: "08:45", end: "12:00", room: null, section: "905" }],
-        exams: { mid: "2026-08-21", final: "2026-10-30", time: "09:30–12:30" }
+        sessions: [{ day: "Tue", start: "08:45", end: "12:00", room: "HM-302", section: "905" }],
+        exams: { mid: "2026-08-21", final: "2026-11-06", time: "09:30–12:30" }
       },
       {
         name: "Introduction to Calculus", code: "01006710", credits: "3(3-0-6)", color: "teal", type: "lecture",
         lecturers: ["Miss Tulaya Limpiti"],
-        sessions: [{ day: "Wed", start: "08:45", end: "12:00", room: null, section: "905" }],
-        exams: { mid: "2026-08-19", final: "2026-10-28", time: "09:30–12:30" }
+        sessions: [{ day: "Wed", start: "08:45", end: "12:00", room: "HM-302", section: "905" }],
+        exams: { mid: "2026-08-19", final: "2026-11-04", time: "09:30–12:30" }
       },
       {
         name: "Digital Citizen", code: "96641007", credits: "3(3-0-6)", color: "magenta", type: "gened",
@@ -572,7 +581,7 @@ const TERMS = [
           { day: "Fri", start: "09:00", end: "12:00", room: "706 (ECC)", section: "905" },
           { day: "Fri", start: "13:00", end: "16:00", room: "706 (ECC)", section: "1905", type: "lab" }
         ],
-        exams: { mid: "2026-08-20", final: "2026-10-29", time: "13:30–16:30" }
+        exams: { mid: "2026-08-20", final: "2026-11-05", time: "13:30–16:30" }
       }
     ],
     notes: [
@@ -593,25 +602,25 @@ const TERMS = [
           { day: "Mon", start: "09:00", end: "12:00", room: "706 (ECC)", section: "902" },
           { day: "Mon", start: "13:00", end: "16:00", room: "706 (ECC)", section: "1902", type: "lab" }
         ],
-        exams: { mid: "2026-08-17", final: "2026-11-02", time: "09:30–12:30" }
+        exams: { mid: "2026-08-17", final: "2026-11-09", time: "09:30–12:30" }
       },
       {
         name: "Discrete Mathematics", code: "01276209", credits: "3(3-0-6)", color: "blue", type: "lecture",
         lecturers: ["Mr. Surin Kittitornkun"],
         sessions: [{ day: "Tue", start: "09:00", end: "12:00", room: "ECC-609", section: "902" }],
-        exams: { mid: "2026-08-21", final: "2026-10-30", time: "09:30–12:30" }
+        exams: { mid: "2026-08-21", final: "2026-11-06", time: "09:30–12:30" }
       },
       {
         name: "Database Systems", code: "01276241", credits: "3(3-0-6)", color: "red", type: "lecture",
         lecturers: ["Mr. Pakorn Watanachaturaporn"],
         sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: "ECC-609", section: "902" }],
-        exams: { mid: "2026-08-20", final: "2026-11-06", time: "09:30–12:30" }
+        exams: { mid: "2026-08-20", final: "2026-11-13", time: "09:30–12:30" }
       },
       {
         name: "Probability & Random Variables", code: "01276206", credits: "3(3-0-6)", color: "green", type: "lecture",
         lecturers: ["Assoc. Prof. Dr. Sakchai Thipchaksurat", "Mr. Rathachai Chawuthai"],
         sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: "ECC-609", section: "902" }],
-        exams: { mid: "2026-08-18", final: "2026-10-27", time: "09:30–12:30" }
+        exams: { mid: "2026-08-18", final: "2026-11-03", time: "09:30–12:30" }
       },
       {
         name: "Computer Networks", code: "01276223", credits: "4(3-3-8)", color: "purple", type: "lecture",
@@ -620,13 +629,13 @@ const TERMS = [
           { day: "Thu", start: "09:00", end: "12:00", room: "ECC-609", section: "902" },
           { day: "Thu", start: "13:00", end: "16:00", room: "ECC-609", section: "1902", type: "lab" }
         ],
-        exams: { mid: "2026-08-22", final: "2026-11-04", time: "09:30–12:30" }
+        exams: { mid: "2026-08-22", final: "2026-11-11", time: "09:30–12:30" }
       },
       {
         name: "Linear Algebra", code: "01006716", credits: "3(3-0-6)", color: "magenta", type: "lecture",
         lecturers: ["Mr. Nattawut Chaomuang"],
-        sessions: [{ day: "Fri", start: "08:45", end: "12:00", room: null, section: "902" }],
-        exams: { mid: "2026-08-19", final: "2026-10-28", time: "13:30–16:30" }
+        sessions: [{ day: "Fri", start: "08:45", end: "12:00", room: "HM-305", section: "902" }],
+        exams: { mid: "2026-08-19", final: "2026-11-04", time: "13:30–16:30" }
       }
     ],
     notes: [
@@ -669,15 +678,15 @@ const TERMS = [
         name: "Microcontroller Interfacing", code: "01276314", credits: "4(3-3-8)", color: "magenta", type: "lecture",
         lecturers: ["Asst. Prof. Sorayut Glomglome"],
         sessions: [
-          { day: "Wed", start: "13:00", end: "16:00", room: "ECC-610", section: "901" },
-          { day: "Wed", start: "16:30", end: "19:30", room: "ECC-610", section: "1901", type: "lab" }
+          { day: "Wed", start: "13:00", end: "16:00", room: "810 (ECC)", section: "901" },
+          { day: "Wed", start: "16:30", end: "19:30", room: "810 (ECC)", section: "1901", type: "lab" }
         ],
         exams: { mid: "2026-08-20", midRoom: "HM-305 · C3", final: "2026-11-11", finalRoom: "HM-302 · C3", time: "13:30–16:30" }
       },
       {
         name: "Operating Systems", code: "01276324", credits: "3(3-0-6)", color: "purple", type: "lecture",
         lecturers: ["Asst. Prof. Watjanapongs Kasemsiri"],
-        sessions: [{ day: "Fri", start: "09:00", end: "12:00", room: "ECC-609", section: "901" }],
+        sessions: [{ day: "Fri", start: "09:00", end: "12:00", room: "ECC-610", section: "901" }],
         exams: { mid: "2026-08-17", final: "2026-11-04", finalRoom: "HM-301 · C2", time: "13:30–16:30" }
       }
     ],
@@ -722,7 +731,7 @@ const TERMS = [
             lecturers: ["Asst. Prof. Sorayut Glomglome"],
             sessions: [
               { day: "Thu", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" },
-              { day: "Thu", start: "16:30", end: "19:30", room: "704 (ECC)", section: "1901", type: "lab" }
+              { day: "Thu", start: "17:00", end: "20:00", room: "704 (ECC)", section: "1901", type: "lab" }
             ],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           },
@@ -736,25 +745,25 @@ const TERMS = [
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           },
           {
-            name: "Charm School", code: "96641001", credits: "—", color: "magenta", type: "gened",
+            name: "Charm School", code: "96642999", credits: "3(3-0-6)", color: "magenta", type: "gened",
             lecturers: ["Faculty"],
-            sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: null, section: null }],
+            sessions: [{ day: "Wed", start: "09:00", end: "12:00", room: null, section: "901" }],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           },
           {
-            name: "Academic Reading and Writing", code: "96644005", credits: "—", color: "magenta", type: "gened",
+            name: "Academic Reading and Writing", code: "96644005", credits: "0(4-0-8)", color: "magenta", type: "gened",
             lecturers: ["Faculty"],
             sessions: [
-              { day: "Tue", start: "17:00", end: "19:00", room: null, section: null },
-              { day: "Wed", start: "17:00", end: "19:00", room: null, section: null }
+              { day: "Tue", start: "17:00", end: "19:00", room: null, section: "101" },
+              { day: "Wed", start: "17:00", end: "19:00", room: null, section: "101" }
             ],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           }
         ],
         notes: [
-          "Theory lectures run 08:45–10:15 + 10:30–12:30 where the sheet states a split; otherwise the 09:00–12:00 band.",
+          "Theory lectures run 08:45–10:15 + 10:30–12:00 where the sheet states a split; otherwise the 09:00–12:00 band.",
           "Practice sections (19xx) are the lab session of the same course; Digital System Fundamentals lab uses room 704 (Vivado).",
-          "Charm School and Academic Reading and Writing are GenEd courses — credits not on the registration sheet.",
+          "Charm School is 3(3-0-6); Academic Reading and Writing is 0(4-0-8). Both are required GenEd.",
           "Exam dates for 2/2569 are not yet published."
         ]
       },
@@ -781,7 +790,7 @@ const TERMS = [
             name: "Software Development Process", code: "01276232", credits: "4(3-3-8)", color: "green", type: "lecture",
             lecturers: ["ชุติเมษฏ์"],
             sessions: [
-              { day: "Tue", start: "13:00", end: "16:00", room: "610 (ECC)", section: "901" },
+              { day: "Tue", start: "09:00", end: "12:00", room: "610 (ECC)", section: "901" },
               { day: "Wed", start: "13:00", end: "16:00", room: "610 (ECC)", section: "1901", type: "lab" }
             ],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
@@ -820,7 +829,7 @@ const TERMS = [
             name: "Advanced Database Systems", code: "01276535", credits: "3(3-0-6)", color: "teal", type: "elective",
             prereq: { title: "Database Systems", met: true },
             lecturers: ["ศุภมิตร"],
-            sessions: [{ day: "Tue", start: "13:00", end: "16:00", room: "609 (ECC)", section: "901" }],
+            sessions: [{ day: "Tue", start: "09:00", end: "12:00", room: "609 (ECC)", section: "901" }],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           },
           {
@@ -845,8 +854,8 @@ const TERMS = [
             name: "Computer Engineering Project Preparation", code: "01276390", credits: "2(1-3-2)", color: "purple", type: "lecture",
             lecturers: ["Mr. Kanut Tangtisanon"],
             sessions: [
-              { day: "Thu", start: "16:30", end: "19:30", room: null, section: "901" },
-              { day: "Sat", start: "16:30", end: "19:30", room: null, section: "1901", type: "lab" }
+              { day: "Thu", start: "16:00", end: "17:00", room: null, section: "901" },
+              { day: "Fri", start: "16:30", end: "19:30", room: null, section: "1901", type: "lab" }
             ],
             exams: { midNote: "Not yet published", finalNote: "Not yet published" }
           },
@@ -858,7 +867,7 @@ const TERMS = [
           }
         ],
         notes: [
-          "Computer Engineering Project Preparation has a Saturday practice session (1901, 16:30–19:30).",
+          "Computer Engineering Project Preparation has a Friday practice session (1901, 16:30–19:30).",
           "Advanced Database Systems requires Database Systems — passed in Year 2.",
           "Theory of Computation and Introduction to Cloud Computing carry 'ไม่สอบกลางภาค' (no midterm) on the sheet.",
           "Advanced Database Systems and Intro to Cloud Computing are 01276xxx electives.",
@@ -928,6 +937,374 @@ const fmtDate = (iso) => {
   return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 };
 const typeLabel = (t) => ({ lecture: "Lecture", lab: "Lab", elective: "Elective", gened: "Gen Ed" }[t] || "Lecture");
+
+/* --- live KMITL data --- */
+const TERM_CONFIG = [
+  { id: "t1", year: "2569", semester: "1", label: "1/2569" },
+  { id: "t2", year: "2569", semester: "2", label: "2/2569" }
+];
+const API_PATH = "/kmitl/api";
+const CACHE_KEY = "cei-live-v3-2569";
+const CACHE_TTL = 6 * 60 * 60 * 1000;
+const PALETTE = ["red", "green", "blue", "purple", "magenta", "teal"];
+const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+let TERMS = CURATED_TERMS;
+let dataStatus = document.getElementById("data-status");
+
+const hhmm = (s) => (s || "").slice(0, 5);
+const minutes = (t) => toMin(t);
+const dayName = (n) => WEEKDAYS[Number(n) - 1] || null;
+const titleCase = (s) => (s || "").toLowerCase().replace(/(^|[\s./(])([a-z])/g, (m, p, c) => p + c.toUpperCase());
+const stableColor = (code) => {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+};
+
+function apiUrl(config, mode, code) {
+  const p = new URLSearchParams({
+    function: "get-teach-table-show",
+    level_id: "1",
+    mode,
+    selected_year: config.year,
+    selected_semester: config.semester
+  });
+  if (mode === "by_class") {
+    p.set("selected_faculty", "01");
+    p.set("selected_department", "05");
+    p.set("selected_curriculum", "127");
+    p.set("selected_class_year", "0");
+    p.set("search_all_faculty", "0");
+    p.set("search_all_department", "0");
+    p.set("search_all_curriculum", "0");
+    p.set("search_all_branch", "0");
+    p.set("search_all_class_year", "1");
+  } else {
+    p.set("selected_subject_id", code);
+    p.set("search_all_faculty", "1");
+    p.set("search_all_department", "1");
+    p.set("search_all_curriculum", "1");
+    p.set("search_all_branch", "1");
+    p.set("search_all_class_year", "1");
+  }
+  return API_PATH + "?" + p.toString();
+}
+
+async function fetchJson(url, timeoutMs = 10000) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
+      if (!res.ok) throw Object.assign(new Error("HTTP " + res.status), { fatal: res.status < 500 });
+      const data = await res.json();
+      clearTimeout(timer);
+      return data;
+    } catch (err) {
+      clearTimeout(timer);
+      lastError = err;
+      if (err.fatal) break;
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  throw lastError;
+}
+
+function flattenRows(payload, onlyCei) {
+  const rows = [];
+  if (!Array.isArray(payload)) return rows;
+  for (const program of payload) {
+    if (onlyCei && String(program.curriculum2_id) !== "127") continue;
+    const classYear = String(program.class ?? "");
+    for (const group of program.teachtable || []) {
+      for (const row of group.data || []) {
+        if (String(row.closed) !== "0") continue;
+        rows.push({ ...row, classYear });
+      }
+    }
+  }
+  const seen = new Set();
+  return rows.filter((r) => {
+    const key = r.teach_table_id || [r.subject_id, r.section, r.teach_day, r.teach_time].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function schedulable(row) {
+  const day = Number(row.teach_day);
+  return day >= 2 && day <= 7 && row.teach_time && row.teach_time !== "00:00:00" && row.teach_time2 && row.teach_time2 !== "00:00:00";
+}
+
+function parseExtraMeetings(text) {
+  const out = [];
+  for (const match of (text || "").matchAll(/(\d)x(\d\d:\d\d)-(\d\d:\d\d)/g)) {
+    out.push({ day: dayName(match[1]), start: match[2], end: match[3] });
+  }
+  return out.filter((s) => s.day);
+}
+
+function chooseSection(rows) {
+  const lectures = rows.filter((r) => r.lect_or_prac !== "ป" && r.section);
+  const pool = lectures.length ? lectures : rows;
+  return pool.map((r) => r.section).filter(Boolean).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b))[0] || null;
+}
+
+function selectCuratedRows(rows, course, classYear) {
+  const inClass = rows.filter((r) => r.classYear === String(classYear));
+  const pool = inClass.length ? inClass : rows.filter((r) => !["1", "2", "3", "4"].includes(r.classYear));
+  const valid = pool.filter(schedulable);
+  if (!valid.length) return null;
+  const wanted = new Set(course.sessions.map((s) => s.section).filter(Boolean));
+  let anchor = null;
+  if (wanted.size) {
+    const exact = valid.filter((r) => wanted.has(r.section));
+    anchor = (exact.find((r) => r.lect_or_prac !== "ป") || exact[0] || {}).section || null;
+    if (!anchor) {
+      if (!course.code.startsWith("01276")) return null;
+      anchor = chooseSection(valid);
+    }
+  } else {
+    anchor = chooseSection(valid);
+  }
+  if (!anchor) return null;
+  return valid.filter((r) => r.section === anchor || r.sec_pair === anchor);
+}
+
+function sessionsFromRows(rows) {
+  const raw = [];
+  for (const row of rows) {
+    const day = dayName(row.teach_day);
+    if (!day || day === "Sun") continue;
+    const type = row.lect_or_prac === "ป" ? "lab" : undefined;
+    const room = row.room_name || null;
+    raw.push({ day, start: hhmm(row.teach_time), end: hhmm(row.teach_time2), room, section: row.section, ...(type ? { type } : {}) });
+    for (const extra of parseExtraMeetings(row.teachtime_str)) {
+      raw.push({ day: extra.day, start: extra.start, end: extra.end, room, section: row.section, ...(type ? { type } : {}) });
+    }
+  }
+  const seen = new Set();
+  const unique = raw.filter((s) => {
+    const key = [s.day, s.start, s.end, s.room, s.section, s.type].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const sorted = unique.sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day) || minutes(a.start) - minutes(b.start));
+  const merged = [];
+  for (const s of sorted) {
+    const prev = merged[merged.length - 1];
+    const contiguous = prev && prev.day === s.day && prev.room === s.room && prev.section === s.section && prev.type === s.type &&
+      minutes(s.start) - minutes(prev.end) >= 0 && minutes(s.start) - minutes(prev.end) <= 15;
+    if (contiguous) {
+      if (minutes(s.end) > minutes(prev.end)) prev.end = s.end;
+    } else {
+      merged.push({ ...s });
+    }
+  }
+  return merged.map((s) => ({
+    day: s.day,
+    start: s.start,
+    end: s.end,
+    room: s.room,
+    section: s.section,
+    ...(s.type ? { type: s.type } : {})
+  }));
+}
+
+function teacherNames(rows) {
+  const names = [];
+  for (const row of rows) {
+    for (const part of String(row.teacher_list_en || "").split(/<\/div>/)) {
+      const name = part.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+      if (name) names.push(titleCase(name));
+    }
+  }
+  return [...new Set(names)];
+}
+
+function examPatch(rows, curated = {}) {
+  const lectures = rows.filter((r) => r.lect_or_prac !== "ป");
+  const row = lectures.find((r) => r.midterm_start_date_time || r.final_start_date_time) ||
+    rows.find((r) => r.midterm_start_date_time || r.final_start_date_time);
+  const exams = { ...curated };
+  if (!row) return exams;
+  if (row.midterm_start_date_time) {
+    exams.mid = row.midterm_start_date_time.slice(0, 10);
+    delete exams.midNote;
+  }
+  if (row.final_start_date_time) {
+    exams.final = row.final_start_date_time.slice(0, 10);
+    delete exams.finalNote;
+  }
+  const start = row.final_start_date_time || row.midterm_start_date_time;
+  const end = row.final_end_date_time || row.midterm_end_date_time;
+  if (start && end) exams.time = hhmm(start.slice(11)) + "–" + hhmm(end.slice(11));
+  return exams;
+}
+
+function courseType(code, rows, curatedType) {
+  if (curatedType) return curatedType;
+  if (rows.length && rows.every((r) => r.lect_or_prac === "ป")) return "lab";
+  if (code.startsWith("9664")) return "gened";
+  return "lecture";
+}
+
+function makeCourse(code, rows, curated) {
+  return {
+    name: curated ? curated.name : titleCase(rows[0].subject_name_en),
+    code,
+    credits: rows[0].credit_str || (curated ? curated.credits : ""),
+    color: curated ? curated.color : stableColor(code),
+    type: courseType(code, rows, curated ? curated.type : null),
+    lecturers: teacherNames(rows).length ? teacherNames(rows) : (curated ? curated.lecturers : []),
+    sessions: sessionsFromRows(rows),
+    exams: examPatch(rows, curated ? curated.exams : {}),
+    prereq: curated ? curated.prereq : undefined
+  };
+}
+
+function mergeCourse(curated, rows) {
+  const sessions = sessionsFromRows(rows);
+  if (!sessions.length) return curated;
+  return {
+    ...curated,
+    credits: rows[0].credit_str || curated.credits,
+    lecturers: teacherNames(rows).length ? teacherNames(rows) : curated.lecturers,
+    sessions,
+    exams: examPatch(rows, curated.exams)
+  };
+}
+
+function mergeTerm(term, rows) {
+  const byCode = new Map();
+  for (const row of rows) {
+    if (!byCode.has(row.subject_id)) byCode.set(row.subject_id, []);
+    byCode.get(row.subject_id).push(row);
+  }
+  const years = term.years.map((year) => {
+    const n = Number(year.id.slice(1));
+    const known = new Set(year.courses.map((c) => c.code));
+    const courses = year.courses.map((course) => {
+      const candidates = byCode.get(course.code) || [];
+      const selected = selectCuratedRows(candidates, course, n);
+      return selected ? mergeCourse(course, selected) : course;
+    });
+    for (const [code, candidates] of byCode) {
+      if (!code.startsWith("01276") || known.has(code)) continue;
+      const inClass = candidates.filter((r) => r.classYear === String(n) && schedulable(r));
+      if (!inClass.length) continue;
+      const anchor = chooseSection(inClass);
+      const selected = inClass.filter((r) => r.section === anchor || r.sec_pair === anchor);
+      const course = selected.length ? makeCourse(code, selected, null) : null;
+      if (course && course.sessions.length) {
+        courses.push(course);
+        known.add(code);
+      }
+    }
+    return { ...year, courses };
+  });
+  return { ...term, years };
+}
+
+async function fetchTerm(config) {
+  const primary = flattenRows(await fetchJson(apiUrl(config, "by_class")), true);
+  if (!primary.length) throw new Error("Empty timetable for " + config.label);
+  const found = new Set(primary.map((r) => r.subject_id));
+  const missing = [...new Set(CURATED_TERMS.find((t) => t.label === config.label).years.flatMap((y) => y.courses.map((c) => c.code)))]
+    .filter((code) => !found.has(code)).slice(0, 12);
+  const extras = await Promise.allSettled(missing.map((code) => fetchJson(apiUrl(config, "by_subject_id", code))));
+  const extraRows = extras.flatMap((res) => res.status === "fulfilled" ? flattenRows(res.value, false) : []);
+  return primary.concat(extraRows);
+}
+
+function readCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (!cached || cached.v !== 3 || !Array.isArray(cached.terms) || cached.terms.length !== CURATED_TERMS.length) return null;
+    return cached;
+  } catch (err) {
+    return null;
+  }
+}
+
+function writeCache() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ v: 3, savedAt: Date.now(), terms: TERMS }));
+  } catch (err) { /* storage unavailable */ }
+}
+
+function stamp(ms) {
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(ms));
+}
+
+function setDataStatus(text) {
+  if (dataStatus) dataStatus.textContent = text;
+}
+
+function snapshotUi() {
+  const searches = {};
+  document.querySelectorAll(".course-search").forEach((input) => { searches[input.id] = input.value; });
+  const notes = [...document.querySelectorAll("details.notes")].map((d) => d.open);
+  const active = document.activeElement;
+  return {
+    searches,
+    notes,
+    activeId: active && active.id ? active.id : null,
+    selectionStart: active && active.selectionStart,
+    selectionEnd: active && active.selectionEnd,
+    scrollY: window.scrollY
+  };
+}
+
+function restoreUi(ui) {
+  Object.entries(ui.searches).forEach(([id, value]) => {
+    const input = document.getElementById(id);
+    if (input) input.value = value;
+  });
+  document.querySelectorAll("details.notes").forEach((d, i) => { if (ui.notes[i] !== undefined) d.open = ui.notes[i]; });
+  if (ui.activeId) {
+    const active = document.getElementById(ui.activeId);
+    if (active) {
+      active.focus({ preventScroll: true });
+      try { active.setSelectionRange(ui.selectionStart, ui.selectionEnd); } catch (err) { /* not a text field */ }
+    }
+  }
+  window.scrollTo(0, ui.scrollY);
+}
+
+async function loadLiveData() {
+  const cached = readCache();
+  if (cached) {
+    TERMS = cached.terms;
+    renderAll();
+    if (Date.now() - cached.savedAt < CACHE_TTL) {
+      setDataStatus("Live · saved " + stamp(cached.savedAt));
+      return;
+    }
+  }
+  setDataStatus(cached ? "Checking for updates…" : "Loading live schedule…");
+  const results = await Promise.allSettled(TERM_CONFIG.map(async (config) => ({ config, rows: await fetchTerm(config) })));
+  let updated = 0;
+  const liveTerms = CURATED_TERMS.map((term) => {
+    const hit = results.find((r) => r.status === "fulfilled" && r.value.config.label === term.label);
+    if (!hit) return term;
+    updated++;
+    return mergeTerm(term, hit.value.rows);
+  });
+  if (!updated) {
+    setDataStatus(cached ? "Saved copy · " + stamp(cached.savedAt) : "Offline snapshot · KMITL unavailable");
+    return;
+  }
+  const ui = snapshotUi();
+  TERMS = liveTerms;
+  renderAll();
+  restoreUi(ui);
+  if (updated === TERM_CONFIG.length) writeCache();
+  setDataStatus("Live · updated " + stamp(Date.now()));
+}
 
 function renderWeek(year) {
   const hasSat = year.courses.some((c) => c.sessions.some((s) => s.day === "Sat"));
@@ -1055,54 +1432,73 @@ function renderExams(year) {
 
 const YEAR_IDS = ["y1", "y2", "y3", "y4"];
 const YEAR_LABELS = { y1: "1st Year", y2: "2nd Year", y3: "3rd Year", y4: "4th Year" };
-const panels = TERMS.map((term) =>
-  YEAR_IDS.map((yid) => {
-    const year = term.years.find((y) => y.id === yid);
-    const pid = `p-${term.id}-${yid}`;
-    const aria = `${term.label} · ${YEAR_LABELS[yid]}`;
-    if (!year) {
-      return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
-        `<p class="empty">No ${YEAR_LABELS[yid].toLowerCase()} timetable published for ${esc(term.label)}.</p></section>`;
-    }
-    const notes = year.notes.map((n) => `<li>${esc(n)}</li>`).join("");
-    return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
-      `<div class="view view-week">${renderWeek(year)}</div>` +
-      `<div class="view view-courses">${renderCourses(year, pid)}</div>` +
-      `<div class="view view-exams">${renderExams(year)}</div>` +
-      `<details class="notes"><summary>Notes on credits and exam arrangements</summary><ul>${notes}</ul></details>` +
-      `</section>`;
-  }).join("")
-).join("");
 
-document.getElementById("panels").innerHTML = panels;
+function panelHtml() {
+  return TERMS.map((term) =>
+    YEAR_IDS.map((yid) => {
+      const year = term.years.find((y) => y.id === yid);
+      const pid = `p-${term.id}-${yid}`;
+      const aria = `${term.label} · ${YEAR_LABELS[yid]}`;
+      if (!year) {
+        return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
+          `<p class="empty">No ${YEAR_LABELS[yid].toLowerCase()} timetable published for ${esc(term.label)}.</p></section>`;
+      }
+      const notes = year.notes.map((n) => `<li>${esc(n)}</li>`).join("");
+      return `<section class="panel" id="${pid}" aria-label="${esc(aria)}">` +
+        `<div class="view view-week">${renderWeek(year)}</div>` +
+        `<div class="view view-courses">${renderCourses(year, pid)}</div>` +
+        `<div class="view view-exams">${renderExams(year)}</div>` +
+        `<details class="notes"><summary>Notes on credits and exam arrangements</summary><ul>${notes}</ul></details>` +
+        `</section>`;
+    }).join("")
+  ).join("");
+}
 
 // Search: filters the visible year's course cards.
-document.querySelectorAll(".panel").forEach((panel) => {
-  const input = panel.querySelector(".course-search");
-  if (!input) return;
-  const cards = Array.from(panel.querySelectorAll(".course-card"));
-  const count = panel.querySelector(".count");
-  const empty = panel.querySelector(".empty");
-  const apply = () => {
-    const q = input.value.trim().toLowerCase();
-    let shown = 0;
-    cards.forEach((card) => {
-      const ok = !q || card.dataset.search.includes(q);
-      card.hidden = !ok;
-      if (ok) shown++;
-    });
-    count.textContent = shown + (shown === 1 ? " course" : " courses");
-    empty.hidden = shown !== 0;
-  };
-  input.addEventListener("input", apply);
-  apply();
-});
+function wireSearch() {
+  document.querySelectorAll(".panel").forEach((panel) => {
+    const input = panel.querySelector(".course-search");
+    if (!input) return;
+    const cards = Array.from(panel.querySelectorAll(".course-card"));
+    const count = panel.querySelector(".count");
+    const empty = panel.querySelector(".empty");
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      cards.forEach((card) => {
+        const ok = !q || card.dataset.search.includes(q);
+        card.hidden = !ok;
+        if (ok) shown++;
+      });
+      count.textContent = shown + (shown === 1 ? " course" : " courses");
+      empty.hidden = shown !== 0;
+    };
+    input.addEventListener("input", apply);
+    apply();
+  });
+}
 
 // Today column highlight, weekdays only.
-const today = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
-if (DAYS.includes(today)) {
+function applyTodayHighlight() {
+  const today = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
+  if (!DAYS.includes(today)) return;
   document.querySelectorAll(`[data-day="${today}"]`).forEach((el) => el.classList.add("is-today"));
 }
+
+function renderAll() {
+  const ui = snapshotUi();
+  document.getElementById("panels").innerHTML = panelHtml();
+  Object.entries(ui.searches).forEach(([id, value]) => {
+    const input = document.getElementById(id);
+    if (input) input.value = value;
+  });
+  wireSearch();
+  applyTodayHighlight();
+  restoreUi(ui);
+}
+
+renderAll();
+loadLiveData();
 
 // Theme toggle: explicit choice wins, otherwise follow the OS.
 const root = document.documentElement;
