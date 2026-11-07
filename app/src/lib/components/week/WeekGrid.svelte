@@ -350,7 +350,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 0.9;
   }
 
   .gb-tag {
@@ -359,7 +358,6 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    opacity: 0.85;
   }
 
   .block.is-tight {
