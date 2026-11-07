@@ -1,0 +1,13 @@
+[build]
+  base = "app"
+  command = "npm ci && npm run typecheck && npm test && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/kmitl/api"
+  to = "https://regis.reg.kmitl.ac.th/api/:splat"
+  status = 200
+  force = true

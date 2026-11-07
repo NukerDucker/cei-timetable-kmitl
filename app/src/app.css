@@ -1,0 +1,61 @@
+@import '@fontsource/ibm-plex-sans-thai/400.css';
+@import '@fontsource/ibm-plex-sans-thai/500.css';
+@import '@fontsource/ibm-plex-sans-thai/600.css';
+@import '@fontsource/ibm-plex-sans-thai/700.css';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f6f5f2;
+  --foreground: #232323;
+  --card: #ffffff;
+  --muted: #ece9e3;
+  --muted-foreground: #5f5f5f;
+  --border: #e2dfd9;
+  --ring: #232323;
+  --primary: #c94e17;
+  --destructive: #c4442c;
+  --cat-core: #0f76d6;
+  --cat-elective: #6b50f0;
+  --cat-gened: #0a6e7a;
+  --radius: 0.5rem;
+}
+.dark {
+  --background: #1c1b1a;
+  --foreground: #f5f2ee;
+  --card: #262523;
+  --muted: #302e2b;
+  --muted-foreground: #a8a39c;
+  --border: #3a3835;
+  --ring: #f5f2ee;
+  --primary: #e0662b;
+  --destructive: #e06a52;
+}
+@theme inline {
+  --font-sans: 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #ffffff;
+  --color-destructive: var(--destructive);
+  --color-cat-core: var(--cat-core);
+  --color-cat-elective: var(--cat-elective);
+  --color-cat-gened: var(--cat-gened);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+}
+@layer base {
+  * { border-color: var(--border); }
+  html { font-family: var(--font-sans); color-scheme: light; }
+  .dark { color-scheme: dark; }
+  body { @apply bg-background text-foreground antialiased; font-size: 0.875rem; line-height: 1.5; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
