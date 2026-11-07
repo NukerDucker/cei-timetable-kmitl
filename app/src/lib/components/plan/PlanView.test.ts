@@ -197,7 +197,7 @@ describe('PlanView', () => {
 
     await addOption(container, 't1/L103/901')
     await addOption(container, 't1/O105/901')
-    expect(screen.getByRole('heading', { name: 'Conflicts (1)' })).toBeInTheDocument()
+    expect(container.querySelector('header')).toHaveTextContent('1 conflict')
 
     const entry = container.querySelector('[data-plan-entry="t1/L103/901"]')
     if (!(entry instanceof HTMLElement)) throw new Error('Missing lab entry')
@@ -206,7 +206,7 @@ describe('PlanView', () => {
 
     expect(plan.entries.find((item) => item.sectionId === 't1/L103/901')?.role).toBe('ta')
     expect(ta).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('heading', { name: 'Conflicts (0)' })).toBeInTheDocument()
+    expect(container.querySelector('header')).toHaveTextContent('0 conflicts')
 
     const blocks = Array.from(container.querySelectorAll('.block'))
     const labBlock = blocks.find((block) => block.textContent?.includes('Lab Systems'))
@@ -232,8 +232,9 @@ describe('PlanView', () => {
 
     await fireEvent.click(within(clashing).getByRole('button', { name: /^Add / }))
 
-    expect(screen.getByRole('heading', { name: 'Conflicts (1)' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Plan conflicts' })).toHaveTextContent(
+    expect(container.querySelector('header')).toHaveTextContent('1 conflict')
+    expect(container.querySelector('header [title]')).toHaveAttribute(
+      'title',
       'Zulu Circuits ↔ Clash Course · Mon 09:00–11:00',
     )
     expect(container.querySelectorAll('.block.is-conflict')).toHaveLength(2)

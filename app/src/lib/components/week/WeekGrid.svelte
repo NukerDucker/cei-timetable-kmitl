@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { courseCategory, courseCategoryLabel } from '../../../domain/categories'
+  import { courseCategory, courseCategoryLabel, courseColorToken } from '../../../domain/categories'
   import type { TimeRange } from '../../../domain/filters'
   import { DAYS, DAY_START, SLOT, SLOTS, WEEKDAYS, fmtTime, minutes } from '../../../domain/time'
   import type { Category, Course, Day, Session } from '../../../domain/types'
@@ -183,7 +183,7 @@
             class:is-ta={block.isTa}
             class:is-conflict={block.isConflict}
             data-category={block.category}
-            style={blockStyle(block, column.laneCount, activeRange.start)}
+            style={`${blockStyle(block, column.laneCount, activeRange.start)}; --block-color: var(--${courseColorToken(block.course)})`}
             title={`${block.course.name} · ${block.session.start}–${block.session.end}`}
           >
             <span class="gb-time">{block.session.start}–{block.session.end}</span>
@@ -299,15 +299,7 @@
     overflow: hidden;
     border-radius: calc(var(--radius) - 4px);
     color: var(--primary-foreground);
-    background: var(--cat-core);
-  }
-
-  .block[data-category='elective'] {
-    background: var(--cat-elective);
-  }
-
-  .block[data-category='gened'] {
-    background: var(--cat-gened);
+    background: var(--block-color, var(--cat-core));
   }
 
   .block.is-ta {

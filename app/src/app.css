@@ -30,6 +30,18 @@
   --cat-core: #0f76d6;
   --cat-elective: #6b50f0;
   --cat-gened: #0a6e7a;
+  --cat-core-1: #0f76d6;
+  --cat-core-2: #0c63b4;
+  --cat-core-3: #0a559c;
+  --cat-core-4: #0e6cc4;
+  --cat-elective-1: #6b50f0;
+  --cat-elective-2: #5a3ed6;
+  --cat-elective-3: #4b32b8;
+  --cat-elective-4: #6346e0;
+  --cat-gened-1: #0a6e7a;
+  --cat-gened-2: #085c66;
+  --cat-gened-3: #0b7e8c;
+  --cat-gened-4: #064e56;
   --radius: 0.75rem;
   --elevation-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
   --elevation-popover: 0 12px 32px rgb(0 0 0 / 0.14);

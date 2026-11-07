@@ -1,6 +1,7 @@
+import { courseColorToken } from './categories'
 import { planTimeRange } from './filters'
 import { DAYS, SLOT, fmtTime, toMin } from './time'
-import type { CourseColor, PlanCourse } from './types'
+import type { PlanCourse } from './types'
 
 /**
  * Canvas PNG export, ported from the legacy page.
@@ -11,25 +12,11 @@ import type { CourseColor, PlanCourse } from './types'
  */
 
 const DEFAULT_THEME: Record<string, string> = {
-  '--bg': '#f6f5f2',
-  '--ink': '#232323',
-  '--muted': '#5f5f5f',
-  '--line': '#e2dfd9',
-  '--bar-red': '#c4442c',
-  '--bar-green': '#0e7a3b',
-  '--bar-blue': '#0f76d6',
-  '--bar-magenta': '#a33a6b',
-  '--bar-purple': '#6b50f0',
-  '--bar-teal': '#0a6e7a',
-}
-
-const BAR_TOKENS: Record<CourseColor, string> = {
-  red: '--bar-red',
-  green: '--bar-green',
-  blue: '--bar-blue',
-  magenta: '--bar-magenta',
-  purple: '--bar-purple',
-  teal: '--bar-teal',
+  '--background': '#f2f2f7',
+  '--foreground': '#1c1c1e',
+  '--muted-foreground': '#636366',
+  '--border': '#d1d1d6',
+  '--cat-core': '#0f76d6',
 }
 
 const SANS = "'IBM Plex Sans Thai', Arial, sans-serif"
@@ -108,14 +95,11 @@ export function drawPlanCanvas(
   ctx.scale(scale, scale)
 
   const token = readTokens(doc, options)
-  const ink = token('--ink')
-  const muted = token('--muted')
-  const line = token('--line')
-  const bars = Object.fromEntries(
-    (Object.keys(BAR_TOKENS) as CourseColor[]).map((color) => [color, token(BAR_TOKENS[color])]),
-  ) as Record<CourseColor, string>
+  const ink = token('--foreground')
+  const muted = token('--muted-foreground')
+  const line = token('--border')
 
-  ctx.fillStyle = token('--bg')
+  ctx.fillStyle = token('--background')
   ctx.fillRect(0, 0, width, height)
   ctx.textBaseline = 'top'
   ctx.fillStyle = ink
@@ -181,7 +165,7 @@ export function drawPlanCanvas(
       const x = gridX + colW * dayIndex + 3 + boxWidth * lane
       const y = gridY + startRow * slotH + 2
       const boxHeight = Math.max(slotH - 4, span * slotH - 4)
-      ctx.fillStyle = bars[course.color] || bars.blue
+      ctx.fillStyle = token(`--${courseColorToken(course)}`) || token('--cat-core') || '#0f76d6'
       if (typeof ctx.roundRect === 'function') {
         ctx.beginPath()
         ctx.roundRect(x, y, boxWidth, boxHeight, 7)

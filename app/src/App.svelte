@@ -92,6 +92,7 @@
             cohort={route.current.cohort}
             plan={plan}
             gened={gened}
+            onCohortChange={(next) => route.set({ cohort: next })}
           />
         </section>
       {:else if !cohort}

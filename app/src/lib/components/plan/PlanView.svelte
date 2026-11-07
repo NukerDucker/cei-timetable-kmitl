@@ -16,7 +16,8 @@
   import type { PlanContext } from '../../../domain/plan'
   import { sectionId } from '../../../domain/section'
   import type { CohortId, Course, PlanCourse, Term, TermId } from '../../../domain/types'
-  import type { GenedStateStore } from '../../../state/gened.svelte'
+  import { COHORT_TABS } from '../../../state/route.svelte'
+import type { GenedStateStore } from '../../../state/gened.svelte'
   import type { PlanState } from '../../../state/plan.svelte'
   import { cn } from '$lib/utils'
   import Button from '../ui/button/button.svelte'
@@ -29,6 +30,7 @@
     cohort: CohortId
     plan: PlanState
     gened: GenedStateStore
+    onCohortChange?: (cohort: CohortId) => void
   }
 
   interface PickerOption extends PlanOption<Course> {
@@ -42,7 +44,7 @@
     items: (PickerOption & { warnings: string[] })[]
   }
 
-  let { terms, termId, cohort, plan, gened }: Props = $props()
+  let { terms, termId, cohort, plan, gened, onCohortChange }: Props = $props()
 
   const term = $derived(terms.find((candidate) => candidate.id === termId))
   const selectedYear = $derived(term?.years.find((year) => year.id === cohort))
@@ -74,6 +76,8 @@
   let announcement = $state('')
   let searchInput = $state<HTMLInputElement | null>(null)
   let filtersAnchor = $state<HTMLDivElement | null>(null)
+  let calendarEl = $state<HTMLDivElement | null>(null)
+  let railMax = $state(0)
   let clearTimer: ReturnType<typeof setTimeout> | null = null
 
   $effect(() => {
@@ -84,14 +88,26 @@
   })
 
   onMount(() => {
-    if (typeof window.matchMedia !== 'function') return
-    const query = window.matchMedia('(max-width: 900px)')
-    const update = () => {
-      isMobile = query.matches
+    const cleanups: Array<() => void> = []
+    if (typeof window.matchMedia === 'function') {
+      const query = window.matchMedia('(max-width: 900px)')
+      const update = () => {
+        isMobile = query.matches
+      }
+      update()
+      query.addEventListener('change', update)
+      cleanups.push(() => query.removeEventListener('change', update))
     }
-    update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
+    const target = calendarEl
+    if (target && typeof ResizeObserver === 'function') {
+      const observer = new ResizeObserver((entries) => {
+        const entry = entries[0]
+        if (entry) railMax = Math.round(entry.contentRect.height)
+      })
+      observer.observe(target)
+      cleanups.push(() => observer.disconnect())
+    }
+    return () => cleanups.forEach((cleanup) => cleanup())
   })
 
   onDestroy(() => {
@@ -264,53 +280,29 @@
     <header class="flex flex-wrap items-end gap-x-4 gap-y-2">
       <div class="min-w-0">
         <h2 class="text-base font-semibold leading-tight">My plan · {term.label}</h2>
-        <p class="text-xs text-muted-foreground">
-          {courses.length}
-          {courses.length === 1 ? 'course' : 'courses'} · {conflictLabels.length}
-          {conflictLabels.length === 1 ? 'conflict' : 'conflicts'}
+        <p class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>{courses.length} {courses.length === 1 ? 'course' : 'courses'}</span>
+          {#if conflictLabels.length > 0}
+            <span
+              class="rounded-full bg-destructive px-2 py-0.5 text-[0.65rem] font-semibold text-destructive-foreground"
+              title={conflictLabels.join(' · ')}
+            >
+              {conflictLabels.length} {conflictLabels.length === 1 ? 'conflict' : 'conflicts'}
+            </span>
+            <span class="sr-only">{conflictLabels.join('. ')}</span>
+          {:else}
+            <span>0 conflicts</span>
+          {/if}
         </p>
       </div>
       <div class="ml-auto flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          class="min-h-11 min-[901px]:min-h-8"
-          disabled={courses.length === 0 || exporting}
-          onclick={downloadPng}
-        >
-          Download PNG
-        </Button>
-        <Button
-          type="button"
-          variant={clearArmed ? 'destructive' : 'outline'}
-          size="sm"
-          class="min-h-11 min-[901px]:min-h-8"
-          aria-pressed={clearArmed}
-          onclick={clearPlan}
-        >
-          {clearArmed ? 'Click again to clear' : 'Clear term'}
-        </Button>
+        <Button type="button" variant="outline" size="sm" class="min-h-11 min-[901px]:min-h-8" disabled={courses.length === 0 || exporting} onclick={downloadPng}>Download PNG</Button>
+        <Button type="button" variant={clearArmed ? 'destructive' : 'outline'} size="sm" class="min-h-11 min-[901px]:min-h-8" aria-pressed={clearArmed} onclick={clearPlan}>{clearArmed ? 'Click again to clear' : 'Clear term'}</Button>
       </div>
     </header>
 
-    <section class="rounded-xl border bg-card p-3" aria-label="Plan conflicts">
-      <h3 class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-        Conflicts ({conflictLabels.length})
-      </h3>
-      {#if conflictLabels.length === 0}
-        <p class="mt-1 text-xs text-muted-foreground">No conflicts.</p>
-      {:else}
-        <ul class="mt-1 ml-4 list-disc space-y-0.5 text-xs">
-          {#each conflictLabels as label (label)}
-            <li>{label}</li>
-          {/each}
-        </ul>
-      {/if}
-    </section>
-
     <div class="grid gap-4 min-[901px]:grid-cols-[minmax(0,1fr)_360px] min-[901px]:items-start">
-      <div class="min-w-0">
+      <div class="min-w-0" bind:this={calendarEl}>
         <WeekGrid
           {courses}
           range={range}
@@ -320,9 +312,24 @@
       </div>
 
       <aside
-        class="min-w-0 space-y-4 min-[901px]:sticky min-[901px]:top-4 min-[901px]:max-h-[calc(100dvh-6rem)] min-[901px]:overflow-y-auto min-[901px]:rounded-xl min-[901px]:border min-[901px]:bg-card min-[901px]:p-3"
+        class="min-w-0 space-y-4 min-[901px]:sticky min-[901px]:top-4 min-[901px]:overflow-y-auto min-[901px]:rounded-xl min-[901px]:border min-[901px]:bg-card min-[901px]:p-3"
+        style={!isMobile && railMax > 0 ? `max-height: ${railMax}px` : undefined}
         aria-label="Plan courses"
       >
+        <div class="flex items-center justify-between gap-2">
+          <label for="plan-year" class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Year</label>
+          <select
+            id="plan-year"
+            class="min-h-11 rounded-lg border bg-background px-2 text-sm text-foreground min-[901px]:min-h-8"
+            value={cohort}
+            onchange={(event) => onCohortChange?.(event.currentTarget.value as CohortId)}
+          >
+            {#each COHORT_TABS as tab (tab.id)}
+              <option value={tab.id}>{tab.label}</option>
+            {/each}
+          </select>
+        </div>
+
         <section aria-label="In this plan">
           <h3 class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             In this plan

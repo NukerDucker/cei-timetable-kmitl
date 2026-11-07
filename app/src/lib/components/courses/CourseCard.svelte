@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { courseCategory } from '../../../domain/categories'
+  import { courseCategory, courseColorToken } from '../../../domain/categories'
   import type { Course } from '../../../domain/types'
   import { courseTypeLabel, examDateOrNote } from '$lib/labels'
 
@@ -23,7 +23,7 @@
 <article class="course-card">
   <div class="flex items-start justify-between gap-2">
     <h2 class="min-w-0 text-[0.9375rem] font-semibold leading-tight">
-      <span class="cc-dot" data-category={category} aria-hidden="true"></span>
+      <span class="cc-dot" data-category={category} style={`--dot-color: var(--${courseColorToken(course)})`} aria-hidden="true"></span>
       {course.name}
     </h2>
     {#if course.type !== 'lecture'}
@@ -81,15 +81,8 @@
     margin-right: 7px;
     border-radius: 3px;
     vertical-align: 1px;
-    background: var(--cat-core);
+    background: var(--dot-color, var(--cat-core));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent);
   }
 
-  .cc-dot[data-category='elective'] {
-    background: var(--cat-elective);
-  }
-
-  .cc-dot[data-category='gened'] {
-    background: var(--cat-gened);
-  }
 </style>
