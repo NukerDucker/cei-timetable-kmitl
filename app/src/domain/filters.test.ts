@@ -8,6 +8,7 @@ import {
   earliestMinute,
   filterActive,
   filterPlanOptions,
+  groupPlanOptions,
   planTimeRange,
   sortPlanOptions,
 } from './filters'
@@ -164,5 +165,30 @@ describe('planTimeRange', () => {
       makeCourse({ sessions: [makeSession({ day: 'Fri', start: '19:45', end: '21:10' })] }),
     ]
     expect(planTimeRange(courses)).toEqual({ start: 7 * 60, slots: 29 })
+  })
+})
+
+describe('groupPlanOptions', () => {
+  it('groups sections of one code and keeps single-section subjects', () => {
+    const base = {
+      badge: '1st Year',
+      group: 'y1',
+      groupLabel: '1st Year',
+      course: {} as never,
+    }
+    const option = (key: string, code: string, sectionNumber: string) => ({
+      ...base,
+      key,
+      sectionNumber,
+      course: { code, name: code, type: 'lecture' as const, sessions: [] } as never,
+    })
+    const grouped = groupPlanOptions([
+      option('k2', 'A', '102'),
+      option('k1', 'A', '101'),
+      option('k3', 'B', '901'),
+    ])
+    expect(grouped).toHaveLength(2)
+    expect(grouped[0]?.options.map((item) => item.sectionNumber)).toEqual(['101', '102'])
+    expect(grouped[1]?.options).toHaveLength(1)
   })
 })

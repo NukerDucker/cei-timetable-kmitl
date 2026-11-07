@@ -3,6 +3,46 @@ import type { Course, ScheduledCourse, Session } from './types'
 
 export type SortKey = 'name' | 'code' | 'time' | 'credits'
 
+export interface SectionOptionLike extends PlanOption {
+  sectionNumber?: string
+}
+
+export interface SubjectGroup<T extends SectionOptionLike> {
+  code: string
+  name: string
+  group: string
+  options: T[]
+}
+
+/** One card per subject: sections of the same code inside one picker group. */
+export function groupPlanOptions<T extends SectionOptionLike>(options: readonly T[]): SubjectGroup<T>[] {
+  const bySubject = new Map<string, SubjectGroup<T>>()
+  for (const option of options) {
+    const key = `${option.group}:${option.course.code}`
+    const existing = bySubject.get(key)
+    if (existing) {
+      existing.options.push(option)
+    } else {
+      bySubject.set(key, {
+        code: option.course.code,
+        name: option.course.name,
+        group: option.group ?? '',
+        options: [option],
+      })
+    }
+  }
+  for (const subject of bySubject.values()) {
+    subject.options.sort((a, b) => {
+      const aNumber = a.sectionNumber ?? ''
+      const bNumber = b.sectionNumber ?? ''
+      if (!aNumber) return 1
+      if (!bNumber) return -1
+      return aNumber.localeCompare(bNumber, undefined, { numeric: true })
+    })
+  }
+  return [...bySubject.values()]
+}
+
 export interface PlanFilter {
   cohort: string
   credit: string

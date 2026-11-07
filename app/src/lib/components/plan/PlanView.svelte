@@ -1,17 +1,18 @@
 <script lang="ts">
   import { onDestroy, onMount, tick, untrack } from 'svelte'
   import { Dialog } from 'bits-ui'
-  import { TriangleAlert, X } from 'lucide-svelte'
+  import { Plus, TriangleAlert, X } from 'lucide-svelte'
   import { courseWarnings, planConflictDetails, planConflicts } from '../../../domain/conflicts'
   import { exportPlanPng } from '../../../domain/exportPng'
   import {
     DEFAULT_PLAN_FILTER,
     creditValues as domainCreditValues,
     filterPlanOptions,
+    groupPlanOptions,
     planTimeRange,
     sortPlanOptions,
   } from '../../../domain/filters'
-  import type { PlanFilter, PlanOption } from '../../../domain/filters'
+  import type { PlanFilter, PlanOption, SubjectGroup } from '../../../domain/filters'
   import { planCourses } from '../../../domain/plan'
   import type { PlanContext } from '../../../domain/plan'
   import { sectionId } from '../../../domain/section'
@@ -20,6 +21,7 @@
 import type { GenedStateStore } from '../../../state/gened.svelte'
   import type { PlanState } from '../../../state/plan.svelte'
   import { cn } from '$lib/utils'
+  import Badge from '$lib/components/ui/badge/badge.svelte'
   import Button from '../ui/button/button.svelte'
   import WeekGrid from '../week/WeekGrid.svelte'
   import PlanFilterControls from './PlanFilterControls.svelte'
@@ -38,10 +40,18 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
     cohort?: CohortId
   }
 
+  interface PickerSection extends PickerOption {
+    warnings: string[]
+  }
+
+  interface PickerSubject extends SubjectGroup<PickerOption> {
+    items: PickerSection[]
+  }
+
   interface PickerGroup {
     key: string
     label: string
-    items: (PickerOption & { warnings: string[] })[]
+    subjects: PickerSubject[]
   }
 
   let { terms, termId, cohort, plan, gened, onCohortChange }: Props = $props()
@@ -63,7 +73,9 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
   const genedState = $derived(gened.stateFor(termId))
   const genedCourses = $derived(gened.coursesFor(termId))
   const genedGroupLabel = $derived(
-    genedState?.status === 'ready' ? `Gen Ed (${genedCourses.length})` : 'Gen Ed',
+    genedState?.status === 'ready'
+      ? `Gen Ed (${new Set(genedCourses.map((course) => course.code)).size})`
+      : 'Gen Ed',
   )
   const inPlanCodes = $derived(new Set(courses.map((course) => course.code)))
 
@@ -174,12 +186,25 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
     ]
     return order
       .map((group) => {
-        const items = filteredOptions
-          .filter((option) => option.group === group.key)
-          .map((option) => ({ ...option, warnings: courseWarnings(option.course, courses) }))
-        return { ...group, items: sortPlanOptions(items, filter.sort) }
+        const options = filteredOptions.filter((option) => option.group === group.key)
+        const subjects = groupPlanOptions(options)
+        const byKey = new Map(subjects.map((subject) => [subject.options[0]?.key ?? '', subject]))
+        const cards = sortPlanOptions(
+          subjects.map((subject) => subject.options[0]!).filter(Boolean),
+          filter.sort,
+        )
+          .map((option) => byKey.get(option.key))
+          .filter((subject): subject is SubjectGroup<PickerOption> => Boolean(subject))
+          .map((subject) => ({
+            ...subject,
+            items: subject.options.map((option) => ({
+              ...option,
+              warnings: courseWarnings(option.course, courses),
+            })),
+          }))
+        return { ...group, subjects: cards }
       })
-      .filter((group) => group.items.length > 0)
+      .filter((group) => group.subjects.length > 0)
   })
 
   function announce(): void {
@@ -476,52 +501,76 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
                 {group.label}
               </h4>
               <ul class="mt-1">
-                {#each group.items as option (option.key)}
-                  <li
-                    class={cn(
-                      'flex items-start gap-2 border-t py-2',
-                      option.warnings.length > 0 &&
-                        'border-l-[3px] border-l-destructive pl-2',
-                    )}
-                    data-plan-option={option.key}
-                  >
-                    <div class="min-w-0 flex-1">
-                      <div class="flex min-w-0 items-center gap-2">
-                        <span
-                          class="shrink-0 rounded border px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
-                        >
-                          {option.badge}
-                        </span>
-                        <span class="truncate text-sm font-semibold">{option.course.name}</span>
-                      </div>
-                      <p class="truncate text-xs text-muted-foreground" title={`${option.course.code} · ${option.sectionNumber}`}>
-                        {option.course.code}{#if option.sectionNumber} · Sec {option.sectionNumber}{/if}
-                        · {option.course.sessions.map((session) => `${session.day} ${session.start}–${session.end}`).join(', ')}
-                      </p>
-                      {#if option.warnings.length > 0}
-                        <p
-                          class="flex min-w-0 items-center gap-1 text-xs text-destructive"
-                          title={option.warnings.join(' · ')}
-                        >
-                          <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
-                          <span class="truncate">
-                            {option.warnings[0]}{option.warnings.length > 1
-                              ? ` (+${option.warnings.length - 1} more)`
-                              : ''}
-                          </span>
-                        </p>
-                      {/if}
+                {#each group.subjects as subject (subject.code)}
+                  <li class="border-t py-3">
+                    <div class="flex min-w-0 items-center gap-2">
+                      <Badge variant="secondary" class="shrink-0 text-[0.6rem]">
+                        {subject.items[0]?.badge}
+                      </Badge>
+                      <span class="truncate text-sm font-semibold">{subject.name}</span>
+                      <span class="ml-auto shrink-0 text-xs text-muted-foreground">
+                        {subject.code}{subject.items[0]?.course.credits
+                          ? ` · ${subject.items[0].course.credits}`
+                          : ''}
+                      </span>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      class="min-h-11 shrink-0 min-[901px]:min-h-7"
-                      aria-label={`Add ${option.course.name} section ${option.sectionNumber} to plan${option.warnings.length > 0 ? ', conflicts with the current plan' : ''}`}
-                      onclick={() => addOption(option)}
-                    >
-                      Add
-                    </Button>
+                    <div class="mt-2 space-y-1">
+                      {#each subject.items as option (option.key)}
+                        <div
+                          class={cn(
+                            'relative rounded-lg border-l-[3px] bg-muted/40 p-2 pr-12',
+                            option.warnings.length > 0
+                              ? 'border-l-destructive'
+                              : 'border-l-transparent',
+                          )}
+                          data-plan-option={option.key}
+                        >
+                          <div class="flex min-w-0 items-center gap-2">
+                            <Badge variant="outline" class="shrink-0 text-[0.6rem]">
+                              S{option.sectionNumber}
+                            </Badge>
+                            <span class="truncate text-xs text-muted-foreground">
+                              {option.course.sessions
+                                .map(
+                                  (session) =>
+                                    `${session.day} ${session.start}–${session.end}${session.room ? ` · ${session.room}` : ''}`,
+                                )
+                                .join(' / ')}
+                            </span>
+                          </div>
+                          {#if option.course.lecturers.length > 0}
+                            <p class="mt-0.5 truncate text-xs text-muted-foreground">
+                              {option.course.lecturers.join(' · ')}
+                            </p>
+                          {/if}
+                          <div class="min-h-4">
+                            {#if option.warnings.length > 0}
+                              <p
+                                class="flex min-w-0 items-center gap-1 text-xs text-destructive"
+                                title={option.warnings.join(' · ')}
+                              >
+                                <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
+                                <span class="truncate">
+                                  {option.warnings[0]}{option.warnings.length > 1
+                                    ? ` (+${option.warnings.length - 1} more)`
+                                    : ''}
+                                </span>
+                              </p>
+                            {/if}
+                          </div>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            class="absolute right-1 top-1/2 size-9 -translate-y-1/2"
+                            aria-label={`Add ${subject.name} section ${option.sectionNumber} to plan${option.warnings.length > 0 ? ', conflicts with the current plan' : ''}`}
+                            onclick={() => addOption(option)}
+                          >
+                            <Plus class="size-4" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      {/each}
+                    </div>
                   </li>
                 {/each}
               </ul>
