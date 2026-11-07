@@ -191,19 +191,19 @@
             <span class="gb-name">{block.course.name}</span>
             <div class="gb-badges">
               {#if block.session.room}
-                <Badge variant="block" class="gb-room normal-case font-medium tracking-normal">
+                <Badge variant="room" class="gb-room normal-case font-medium tracking-normal">
                   {block.session.room}
                 </Badge>
               {/if}
-              <Badge variant="block" class="uppercase tracking-[0.04em]">{block.tag}</Badge>
+              <Badge variant="tag" class="uppercase tracking-[0.04em]">{block.tag}</Badge>
               {#if block.session.type === 'lab'}
-                <Badge variant="block" class="uppercase tracking-[0.04em]">Lab</Badge>
+                <Badge variant="lab" class="uppercase tracking-[0.04em]">Lab</Badge>
               {/if}
               {#if block.isTa}
-                <Badge variant="block" class="uppercase tracking-[0.04em]">TA</Badge>
+                <Badge variant="ta" class="uppercase tracking-[0.04em]">TA</Badge>
               {/if}
               {#if block.isConflict}
-                <Badge variant="block" class="uppercase tracking-[0.04em]">Conflict</Badge>
+                <Badge variant="conflict" class="uppercase tracking-[0.04em]">Conflict</Badge>
               {/if}
             </div>
           </div>
