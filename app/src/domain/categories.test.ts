@@ -1,0 +1,32 @@
+import { describe, expect, it } from 'vitest'
+import {
+  categoryColorToken,
+  categoryLabel,
+  courseCategory,
+  courseCategoryColorToken,
+  courseCategoryLabel,
+} from './categories'
+import { makeCourse } from './test-utils'
+
+describe('category mapping', () => {
+  it('maps gened courses to gened', () => {
+    const course = makeCourse({ type: 'gened' })
+    expect(courseCategory(course)).toBe('gened')
+    expect(courseCategoryLabel(course)).toBe('Gen Ed')
+    expect(courseCategoryColorToken(course)).toBe('cat-gened')
+  })
+
+  it('maps elective courses to elective', () => {
+    const course = makeCourse({ type: 'elective' })
+    expect(courseCategory(course)).toBe('elective')
+    expect(categoryLabel('elective')).toBe('Elective')
+    expect(categoryColorToken('elective')).toBe('cat-elective')
+  })
+
+  it('maps lecture and lab courses to core (labs inherit)', () => {
+    expect(courseCategory(makeCourse({ type: 'lecture' }))).toBe('core')
+    expect(courseCategory(makeCourse({ type: 'lab' }))).toBe('core')
+    expect(categoryLabel('core')).toBe('Core')
+    expect(categoryColorToken('core')).toBe('cat-core')
+  })
+})
