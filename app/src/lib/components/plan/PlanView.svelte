@@ -299,10 +299,10 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
 {#if !term}
   <p class="text-sm text-muted-foreground">This term is unavailable.</p>
 {:else}
-  <div class="space-y-3">
+  <div class="flex min-h-0 flex-1 flex-col gap-3">
     <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
-    <header class="flex flex-wrap items-end gap-x-4 gap-y-2">
+    <header class="flex shrink-0 flex-wrap items-end gap-x-4 gap-y-2">
       <div class="min-w-0">
         <h2 class="text-base font-semibold leading-tight">My plan · {term.label}</h2>
         <p class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -326,8 +326,8 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
       </div>
     </header>
 
-    <div class="grid gap-4 min-[901px]:grid-cols-[minmax(0,1fr)_360px] min-[901px]:items-start">
-      <div class="min-w-0" bind:this={calendarEl}>
+    <div class="grid min-h-0 flex-1 gap-4 min-[901px]:grid-cols-[minmax(0,1fr)_360px] min-[901px]:items-stretch">
+      <div class="min-h-0 min-w-0" bind:this={calendarEl}>
         <WeekGrid
           {courses}
           range={range}

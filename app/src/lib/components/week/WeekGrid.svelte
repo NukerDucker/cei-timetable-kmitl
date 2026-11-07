@@ -215,7 +215,7 @@
 
 <style>
   .week-grid {
-    --week-row-h: clamp(20px, 2.6vh, 30px);
+    --week-row-h: clamp(14px, calc((100dvh - 380px) / 26), 30px);
     display: grid;
     min-width: 720px;
     border-right: 1px solid var(--border);

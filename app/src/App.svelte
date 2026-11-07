@@ -46,8 +46,8 @@
   }
 </script>
 
-<div class="min-h-dvh bg-background text-foreground">
-  <header class="mx-auto max-w-[1400px] px-3 pt-3 sm:px-4">
+<div class="flex h-dvh flex-col overflow-hidden bg-background text-foreground max-[900px]:h-auto max-[900px]:min-h-dvh max-[900px]:overflow-visible">
+  <header class="mx-auto w-full max-w-[1400px] px-3 pt-3 sm:px-4">
     <div class="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
       <div class="col-span-2 rounded-2xl border bg-card p-4 shadow-card md:col-span-1">
         <p class="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
@@ -77,7 +77,7 @@
     </div>
   </header>
 
-  <div class="mx-auto flex max-w-[1400px] flex-col gap-3 px-3 pb-12 pt-3 sm:px-4">
+  <div class="mx-auto flex min-h-0 w-full max-w-[1400px] flex-1 flex-col gap-3 px-3 pb-3 pt-3 sm:px-4">
     <div class="rounded-2xl border bg-card p-2 shadow-card">
       <ControlBar
         route={route.current}
@@ -87,13 +87,13 @@
     </div>
 
 
-    <main>
+    <main class="flex min-h-0 flex-1 flex-col">
       {#if !term}
         <section class="rounded-2xl bg-card p-4 shadow-card">
           <p class="text-sm text-muted-foreground">This timetable is unavailable.</p>
         </section>
       {:else if route.current.view === 'plan'}
-        <section class="rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={planLabel}>
+        <section class="flex min-h-0 flex-col overflow-hidden rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={planLabel}>
           <PlanView
             terms={state.terms}
             termId={route.current.term}
@@ -110,7 +110,7 @@
           </p>
         </section>
       {:else}
-        <section class="rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={panelLabel}>
+        <section class="min-h-0 overflow-y-auto rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={panelLabel}>
           {#if route.current.view === 'week'}
             <Legend />
             <WeekGrid courses={cohort.courses} />
