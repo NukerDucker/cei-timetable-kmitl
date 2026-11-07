@@ -218,6 +218,7 @@
   .plan-aside {
     position: sticky; top: 84px;
     max-height: calc(100vh - 100px); overflow-y: auto; overscroll-behavior: contain;
+    min-width: 0;
     padding: 10px 12px;
     border: 1px solid var(--line); border-radius: 8px; background: var(--card);
   }
@@ -275,8 +276,24 @@
   .plan-entry .pr-name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .plan-entry .plan-btn { min-height: 28px; padding: 2px 8px; flex: none; }
   .plan-row.is-clash { border-left: 3px solid var(--bar-red); padding-left: 6px; }
-  .plan-badge.is-clash { color: var(--ink); border-color: var(--bar-red); }
-  .plan-warn { flex: 1 1 100%; font-size: 0.7rem; color: var(--ink); line-height: 1.25; }
+  .plan-option { flex-wrap: nowrap; align-items: flex-start; gap: 8px; }
+  .plan-option .po-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .po-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .po-name {
+    flex: 1 1 auto; min-width: 0; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .po-meta {
+    color: var(--muted); font-size: 0.72rem; font-weight: 400;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .po-warn {
+    display: flex; align-items: center; gap: 4px; min-width: 0;
+    color: var(--ink); font-size: 0.7rem; line-height: 1.25;
+  }
+  .po-warn svg { width: 12px; height: 12px; flex: none; color: var(--bar-red); }
+  .po-warn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .po-add { flex: none; align-self: center; }
   .g-block.is-ta { outline: 2px dashed var(--on-bar); outline-offset: -4px; }
   .g-block.is-conflict { outline: 3px solid var(--on-bar); outline-offset: -3px; }
   .g-block.is-tight { padding: 3px 8px; gap: 0; }
@@ -1912,16 +1929,21 @@ function renderPlanPanel(termId) {
         const times = c.sessions.map((s) => `${s.day} ${s.start}–${s.end}`).join(", ");
         const meta = `${c.code}${c.section ? " · Sec " + c.section : ""} · ${times}`;
         const label = c.section ? `${c.name} section ${c.section}` : c.name;
-        return `<li class="plan-row${warns.length ? " is-clash" : ""}" data-search="${esc(search)}">` +
-          `<span class="plan-badge">${esc(badge)}</span>` +
-          (warns.length ? `<span class="plan-badge is-clash">Clash</span>` : "") +
-          `<span class="pr-name">${esc(c.name)}<span class="pr-meta"> · ${esc(meta)}</span></span>` +
-          (warns.length
-            ? `<span class="plan-warn" title="${esc(warns.join(" · "))}">` +
-              `<span aria-hidden="true">⚠ </span>${esc(warns[0])}` +
-              `${warns.length > 1 ? ` (+${warns.length - 1} more)` : ""}</span>`
-            : "") +
-          `<button type="button" class="plan-btn" data-plan-add="${esc(key)}" data-focus="add-${esc(key)}"` +
+        return `<li class="plan-row plan-option${warns.length ? " is-clash" : ""}" data-search="${esc(search)}">` +
+          `<div class="po-body">` +
+            `<div class="po-head"><span class="plan-badge">${esc(badge)}</span>` +
+              `<span class="po-name">${esc(c.name)}</span></div>` +
+            `<div class="po-meta" title="${esc(meta)}">${esc(meta)}</div>` +
+            (warns.length
+              ? `<div class="po-warn" title="${esc(warns.join(" · "))}">` +
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"` +
+                  ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">` +
+                  `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"/>` +
+                  `<path d="M12 9v4"/><path d="M12 17h.01"/></svg>` +
+                `<span>${esc(warns[0])}${warns.length > 1 ? ` (+${warns.length - 1} more)` : ""}</span></div>`
+              : "") +
+          `</div>` +
+          `<button type="button" class="plan-btn po-add" data-plan-add="${esc(key)}" data-focus="add-${esc(key)}"` +
             ` aria-label="Add ${esc(label)} to plan${warns.length ? ", conflicts with the current plan" : ""}">Add</button>` +
         `</li>`;
       }).join("") +
