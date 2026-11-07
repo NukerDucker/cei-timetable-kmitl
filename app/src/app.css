@@ -8,7 +8,7 @@
 
 /* Apple-native semantic tokens. Light = iOS grouped background. Dark = true black. */
 :root {
-  --background: #f2f2f7;
+  --background: #e9e6e1;
   --foreground: #1c1c1e;
   --card: #ffffff;
   --card-foreground: #1c1c1e;
@@ -18,13 +18,13 @@
   --primary-foreground: #ffffff;
   --secondary: #e5e5ea;
   --secondary-foreground: #1c1c1e;
-  --muted: #e5e5ea;
+  --muted: #f1efeb;
   --muted-foreground: #636366;
   --accent: #e5e5ea;
   --accent-foreground: #1c1c1e;
   --destructive: #c4442c;
   --destructive-foreground: #ffffff;
-  --border: #d1d1d6;
+  --border: #ddd8d1;
   --input: #d1d1d6;
   --ring: #007aff;
   --cat-core: #0f76d6;
@@ -42,16 +42,16 @@
   --cat-gened-2: #085c66;
   --cat-gened-3: #0b7e8c;
   --cat-gened-4: #064e56;
-  --radius: 0.75rem;
-  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+  --radius: 1rem;
+  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 14px 40px rgb(0 0 0 / 0.08);
   --elevation-popover: 0 12px 32px rgb(0 0 0 / 0.14);
   --material-bar: color-mix(in srgb, var(--card) 82%, transparent);
 }
 
 .dark {
-  --background: #000000;
+  --background: #09090b;
   --foreground: #ffffff;
-  --card: #1c1c1e;
+  --card: #18181b;
   --card-foreground: #ffffff;
   --popover: #1c1c1e;
   --popover-foreground: #ffffff;
@@ -59,19 +59,19 @@
   --primary-foreground: #ffffff;
   --secondary: #2c2c2e;
   --secondary-foreground: #ffffff;
-  --muted: #2c2c2e;
+  --muted: #242427;
   --muted-foreground: #98989f;
   --accent: #2c2c2e;
   --accent-foreground: #ffffff;
   --destructive: #ff6b5c;
   --destructive-foreground: #1c1c1e;
-  --border: #38383a;
+  --border: #2c2c30;
   --input: #38383a;
   --ring: #0a84ff;
   --cat-core: #0f76d6;
   --cat-elective: #6b50f0;
   --cat-gened: #0a6e7a;
-  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.35);
+  --elevation-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 44px rgb(0 0 0 / 0.5);
   --elevation-popover: 0 12px 32px rgb(0 0 0 / 0.6);
   --material-bar: color-mix(in srgb, #1c1c1e 72%, transparent);
 }

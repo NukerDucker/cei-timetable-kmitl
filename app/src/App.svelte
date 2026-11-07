@@ -47,19 +47,25 @@
 </script>
 
 <div class="min-h-dvh bg-background text-foreground">
-  <header class="material-bar sticky top-0 z-20 border-b">
-    <div class="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-      <div class="min-w-0">
+  <header class="mx-auto max-w-[1400px] px-3 pt-3 sm:px-4">
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div class="col-span-2 rounded-2xl border bg-card p-4 shadow-card md:col-span-1">
         <p class="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           KMITL · Faculty of Engineering
         </p>
-        <h1 class="text-[1.6rem] font-bold leading-tight tracking-[-0.02em] sm:text-[1.75rem]">
+        <h1 class="text-[1.8rem] font-bold leading-tight tracking-[-0.02em] sm:text-[2rem]">
           CEI Schedule
         </h1>
+        <p class="mt-0.5 text-xs text-muted-foreground">Computer Engineering · International</p>
       </div>
-      <div class="ml-auto flex min-w-0 items-center gap-2">
+      <div class="rounded-2xl border bg-card p-4 shadow-card">
+        <span class="block text-[0.62rem] font-semibold uppercase tracking-[0.09em] text-muted-foreground">Term</span>
+        <span class="mt-1 block text-xl font-semibold leading-tight">{term?.label ?? '—'}</span>
+      </div>
+      <div class="min-w-0 rounded-2xl border bg-card p-4 shadow-card">
+        <span class="block text-[0.62rem] font-semibold uppercase tracking-[0.09em] text-muted-foreground">Live sync</span>
         <span
-          class="min-w-0 max-w-[16rem] truncate text-[0.68rem] text-muted-foreground"
+          class="mt-1 block truncate text-xs text-muted-foreground"
           role="status"
           aria-live="polite"
           aria-atomic="true"
@@ -67,19 +73,18 @@
         >
           {state.statusText}
         </span>
-        <span class="shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-          {term?.label ?? '—'}
-        </span>
       </div>
     </div>
   </header>
 
   <div class="mx-auto flex max-w-[1400px] flex-col gap-3 px-3 pb-12 pt-3 sm:px-4">
-    <ControlBar
-      route={route.current}
-      onchange={(patch) => route.set(patch)}
-      onprefetch={prefetch}
-    />
+    <div class="rounded-2xl border bg-card p-2 shadow-card">
+      <ControlBar
+        route={route.current}
+        onchange={(patch) => route.set(patch)}
+        onprefetch={prefetch}
+      />
+    </div>
 
 
     <main>
