@@ -333,6 +333,7 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
           range={range}
           conflictKeys={conflictKeys}
           taKeys={taKeys}
+          fill
         />
       </div>
 

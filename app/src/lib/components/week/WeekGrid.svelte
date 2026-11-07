@@ -15,6 +15,8 @@
     conflictKeys?: readonly string[]
     /** Section IDs rendered as TA (lab-only, dashed outline). */
     taKeys?: readonly string[]
+    /** Stretch rows to the container height (Plan view). Desktop only. */
+    fill?: boolean
   }
 
   interface WeekBlock {
@@ -37,7 +39,7 @@
     laneCount: number
   }
 
-  let { courses, today, range, conflictKeys = [], taKeys = [] }: Props = $props()
+  let { courses, today, range, conflictKeys = [], taKeys = [], fill = false }: Props = $props()
 
   const activeRange = $derived<TimeRange>(range ?? { start: DAY_START, slots: SLOTS })
   const taSet = $derived(new Set(taKeys))
@@ -143,11 +145,13 @@
 
   const gridStyle = $derived(
     `grid-template-columns: 4rem repeat(${week.days.length}, minmax(0, 1fr)); ` +
-      `grid-template-rows: 2.75rem repeat(${activeRange.slots}, var(--week-row-h))`,
+      (fill
+        ? `grid-template-rows: 2.75rem repeat(${activeRange.slots}, minmax(0, 1fr)); height: 100%;`
+        : `grid-template-rows: 2.75rem repeat(${activeRange.slots}, var(--week-row-h))`),
   )
 </script>
 
-<div class="week-scroll overflow-x-auto">
+<div class="week-scroll overflow-x-auto" class:fill>
   <div
     class="week-grid"
     role="group"
@@ -367,6 +371,21 @@
   .block.is-tight .gb-badges {
     display: none;
   }
+  .week-scroll.fill {
+    height: 100%;
+  }
+
+  .week-scroll.fill .week-grid {
+    height: 100%;
+  }
+
+  @media (max-width: 901px) {
+    .week-scroll.fill,
+    .week-scroll.fill .week-grid {
+      height: auto;
+    }
+  }
+
   @media (max-width: 640px) {
     .week-scroll {
       overflow: visible;
