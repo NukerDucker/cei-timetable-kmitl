@@ -1456,25 +1456,30 @@ async function loadLiveData() {
   setDataStatus((updated === TERM_CONFIG.length ? "Live · updated " : "Live · partial update ") + stamp(Date.now()));
 }
 
-function renderWeek(year) {
+function renderWeek(year, range) {
+  const startMin = range ? range.start : DAY_START;
+  const slotCount = range ? range.slots : SLOTS;
   const hasSat = year.courses.some((c) => c.sessions.some((s) => s.day === "Sat"));
   const days = hasSat ? [...DAYS, "Sat"] : DAYS;
   const legend = year.courses.map((c) =>
     `<span><i class="subject-${esc(c.color)}" aria-hidden="true"></i>${esc(c.name)}</span>`
   ).join("");
   let h = `<div class="legend" tabindex="0" aria-label="Course color legend">${legend}</div>` +
-    `<div class="grid" style="grid-template-columns:64px repeat(${days.length}, minmax(0,1fr))">`;
+    `<div class="grid" style="grid-template-columns:64px repeat(${days.length}, minmax(0,1fr));` +
+    `grid-template-rows:var(--head-h) repeat(${slotCount}, var(--row-h))">`;
 
   h += '<div class="g-corner">Time</div>';
   days.forEach((d) => { h += `<div class="g-head" data-day="${d}">${d}</div>`; });
-  for (let r = 0; r < SLOTS; r++) {
-    const minute = DAY_START + r * SLOT;
-    if (minute % 60 !== 0) continue;
+  for (let r = 0; r < slotCount; r++) {
+    const minute = startMin + r * SLOT;
+    if (minute % 60 !== 0 && r !== 0) continue;
     const first = r === 0 ? " g-time-first" : "";
     h += `<div class="g-time${first}" style="grid-row:${r + 2}">${fmtTime(minute)}</div>`;
   }
-  const lunchRow = (12 * 60 - DAY_START) / SLOT + 2;
-  h += `<div class="g-lunch" style="grid-row:${lunchRow} / ${lunchRow + 2}">Lunch</div>`;
+  const lunchSlot = (12 * 60 - startMin) / SLOT;
+  if (lunchSlot >= 0 && lunchSlot + 2 <= slotCount) {
+    h += `<div class="g-lunch" style="grid-row:${lunchSlot + 2} / ${lunchSlot + 4}">Lunch</div>`;
+  }
 
   days.forEach((d, i) => {
     const sessions = [];
@@ -1496,8 +1501,8 @@ function renderWeek(year) {
       (cols > 1 ? `;grid-template-columns:repeat(${cols}, minmax(0,1fr))` : "") + `">`;
     placed.forEach(({ session: s, lane }) => {
       const start = toMin(s.start);
-      const snapped = DAY_START + Math.floor((start - DAY_START) / SLOT) * SLOT;
-      const localRow = (snapped - DAY_START) / SLOT + 1;
+      const snapped = startMin + Math.floor((start - startMin) / SLOT) * SLOT;
+      const localRow = (snapped - startMin) / SLOT + 1;
       const span = Math.max(1, Math.round((toMin(s.end) - snapped) / SLOT));
       const type = s.type || s.course.type;
       const laneStyle = cols > 1
@@ -1701,6 +1706,21 @@ function planConflicts(courses) {
   return [...new Set(hits)];
 }
 
+function planTimeRange(courses) {
+  let min = Infinity, max = -Infinity;
+  for (const c of courses) {
+    for (const s of c.sessions) {
+      const a = toMin(s.start), b = toMin(s.end);
+      if (a < min) min = a;
+      if (b > max) max = b;
+    }
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return { start: DAY_START, slots: SLOTS };
+  const start = Math.max(0, Math.floor(min / SLOT) * SLOT);
+  const end = Math.min(24 * 60, Math.ceil(max / SLOT) * SLOT);
+  return { start, slots: Math.max(2, Math.ceil((end - start) / SLOT)) };
+}
+
 function courseCredits(c) {
   const n = parseInt(c.credits, 10);
   return Number.isFinite(n) ? n : null;
@@ -1854,7 +1874,7 @@ function renderPlanPanel(termId) {
     `</div>` +
     `<div class="plan-conflicts">${conflictHtml}</div>` +
     `<div class="plan-layout">` +
-      `<div class="plan-main">${renderWeek({ courses })}</div>` +
+      `<div class="plan-main">${renderWeek({ courses }, planTimeRange(courses))}</div>` +
       `<aside class="plan-aside" aria-label="Plan courses">` +
         `<section><h3>In this plan</h3><ul class="plan-list">${entries}</ul></section>` +
         `<section class="plan-picker"><h3>Add a course</h3>${genedStatus}` +
@@ -1966,9 +1986,11 @@ function exportPlanPng(termId) {
 
   const draw = () => {
     const days = courses.some((c) => c.sessions.some((s) => s.day === "Sat")) ? [...DAYS, "Sat"] : DAYS;
+    const range = planTimeRange(courses);
+    const startMin = range.start, slotCount = range.slots;
     const slotH = 44, headH = 46, timeW = 68, pad = 22, footH = 34, colW = 190;
     const width = pad * 2 + timeW + colW * days.length;
-    const height = pad * 2 + headH + slotH * SLOTS + footH;
+    const height = pad * 2 + headH + slotH * slotCount + footH;
     const scale = 2;
     const canvas = document.createElement("canvas");
     canvas.width = width * scale;
@@ -2000,7 +2022,7 @@ function exportPlanPng(termId) {
     days.forEach((d, i) => ctx.fillText(d.toUpperCase(), gridX + colW * (i + 0.5), pad + headH - 18));
     ctx.textAlign = "left";
 
-    for (let r = 0; r < SLOTS; r++) {
+    for (let r = 0; r < slotCount; r++) {
       const y = gridY + r * slotH;
       ctx.strokeStyle = line;
       ctx.lineWidth = 0.5;
@@ -2008,10 +2030,10 @@ function exportPlanPng(termId) {
       ctx.moveTo(gridX, y);
       ctx.lineTo(width - pad, y);
       ctx.stroke();
-      if ((DAY_START + r * SLOT) % 60 === 0) {
+      if ((startMin + r * SLOT) % 60 === 0 || r === 0) {
         ctx.fillStyle = muted;
         ctx.font = `500 11px ${sans}`;
-        ctx.fillText(fmtTime(DAY_START + r * SLOT), pad, y - 5);
+        ctx.fillText(fmtTime(startMin + r * SLOT), pad, y - 5);
       }
     }
     days.forEach((_, i) => {
@@ -2019,7 +2041,7 @@ function exportPlanPng(termId) {
       ctx.strokeStyle = line;
       ctx.beginPath();
       ctx.moveTo(x, gridY);
-      ctx.lineTo(x, gridY + slotH * SLOTS);
+      ctx.lineTo(x, gridY + slotH * slotCount);
       ctx.stroke();
     });
 
@@ -2036,7 +2058,7 @@ function exportPlanPng(termId) {
       });
       const lanes = Math.max(1, laneEnds.length);
       placed.forEach(({ c, s, lane }) => {
-        const startRow = (toMin(s.start) - DAY_START) / SLOT;
+        const startRow = (toMin(s.start) - startMin) / SLOT;
         const span = (toMin(s.end) - toMin(s.start)) / SLOT;
         const w = (colW - 6) / lanes;
         const x = gridX + colW * dayIndex + 3 + w * lane;
