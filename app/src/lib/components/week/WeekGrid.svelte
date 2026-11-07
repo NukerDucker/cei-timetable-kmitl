@@ -345,8 +345,9 @@
   .gb-badges {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: 2px;
-    margin-top: auto;
+    margin-top: 0;
   }
 
   .block.is-tight {
