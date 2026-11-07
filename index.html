@@ -152,7 +152,8 @@
   body:has(#t-y4:checked) .wrap label[for="t-y4"],
   body:has(#v-week:checked) .wrap label[for="v-week"],
   body:has(#v-courses:checked) .wrap label[for="v-courses"],
-  body:has(#v-exams:checked) .wrap label[for="v-exams"] {
+  body:has(#v-exams:checked) .wrap label[for="v-exams"],
+  body:has(#v-plan:checked) .wrap label[for="v-plan"] {
     background: #1a1816; color: #ffffff; border-color: #1a1816;
   }
   body:has(#tt-t1:focus-visible) .wrap label[for="tt-t1"],
@@ -164,6 +165,7 @@
   body:has(#v-week:focus-visible) .wrap label[for="v-week"],
   body:has(#v-courses:focus-visible) .wrap label[for="v-courses"],
   body:has(#v-exams:focus-visible) .wrap label[for="v-exams"],
+  body:has(#v-plan:focus-visible) .wrap label[for="v-plan"],
   #theme-toggle:focus-visible,
   .course-search:focus-visible,
   .notes summary:focus-visible {
@@ -188,6 +190,91 @@
   body:has(#v-week:checked) .wrap .view-week,
   body:has(#v-courses:checked) .wrap .view-courses,
   body:has(#v-exams:checked) .wrap .view-exams { display: block; }
+
+  /* --- plan view --- */
+  /* !important: term × year show rules outrank a plain `.panel` hide by specificity. */
+  body:has(#v-plan:checked) .wrap .panel { display: none !important; }
+  body:has(#v-plan:checked) .wrap #p-plan { display: block !important; }
+
+  .plan-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 0 0 6px; }
+  .plan-head h2 { margin: 0; font-size: 1rem; }
+  .plan-meta { margin: 0; color: var(--muted); font-size: 0.75rem; }
+  .plan-actions { margin-left: auto; display: flex; gap: 6px; }
+  .plan-btn {
+    min-height: 34px; padding: 6px 12px;
+    border: 1px solid var(--frame); border-radius: 6px;
+    background: var(--card); color: var(--ink);
+    font-family: 'IBM Plex Sans Thai', Arial, sans-serif; font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .plan-btn:hover { background: var(--bg); }
+  .plan-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .plan-btn[aria-pressed="true"] { background: #1a1816; color: #ffffff; border-color: #1a1816; }
+  .plan-conflicts { margin: 0 0 8px; font-size: 0.75rem; color: var(--ink); }
+  .plan-conflicts p { margin: 0; color: var(--muted); }
+  .plan-conflicts ul { margin: 0; padding-left: 18px; }
+  .plan-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+  .plan-main { min-width: 0; }
+  .plan-aside {
+    position: sticky; top: 84px;
+    max-height: calc(100vh - 100px); overflow-y: auto; overscroll-behavior: contain;
+    padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+  }
+  .plan-aside h3 { margin: 0 0 4px; font-size: 0.8rem; }
+  .plan-aside section + section { margin-top: 12px; }
+  .plan-gened-status { margin: 0 0 4px; color: var(--muted); font-size: 0.72rem; }
+  .plan-gened-status .plan-btn { margin-left: 4px; min-height: 30px; padding: 4px 8px; }
+  @media (max-width: 900px) {
+    .plan-layout { grid-template-columns: 1fr; }
+    .plan-aside { position: static; max-height: none; overflow: visible; overscroll-behavior: auto; padding: 0; border: 0; background: transparent; }
+  }
+  .plan-list { list-style: none; margin: 0; padding: 0; }
+  .plan-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
+    padding: 6px 0; border-top: 1px solid var(--line);
+    font-size: 0.78rem;
+  }
+  .plan-row:first-child { border-top: 0; }
+  .plan-row[hidden] { display: none; }
+  .pr-name { flex: 1 1 140px; font-weight: 600; }
+  .pr-meta { font-weight: 400; color: var(--muted); font-size: 0.72rem; }
+  .plan-badge {
+    font-size: 0.6rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 6px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--muted);
+    white-space: nowrap;
+  }
+  .plan-search {
+    width: 100%; min-height: 36px; padding: 6px 10px; margin: 0 0 4px;
+    border: 1px solid var(--frame); border-radius: 6px;
+    background: var(--card); color: var(--ink);
+    font-family: 'IBM Plex Sans Thai', Arial, sans-serif; font-size: 0.8rem;
+  }
+  .plan-search:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .plan-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 6px; }
+  .plan-field { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--muted); }
+  .plan-select {
+    min-height: 30px; padding: 2px 6px;
+    border: 1px solid var(--frame); border-radius: 6px;
+    background: var(--card); color: var(--ink);
+    font-family: 'IBM Plex Sans Thai', Arial, sans-serif; font-size: 0.72rem;
+  }
+  .plan-select:focus-visible, .plan-day:focus-visible, .plan-check input:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+  .plan-days { gap: 4px; }
+  .plan-day { min-height: 30px; padding: 2px 8px; font-size: 0.7rem; }
+  .plan-check { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--ink); }
+  .plan-group h4 {
+    margin: 10px 0 2px; font-size: 0.66rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  }
+  .plan-group[hidden] { display: none; }
+  .plan-empty { margin: 6px 0; color: var(--muted); font-size: 0.8rem; }
+  .plan-entry { flex-wrap: nowrap; }
+  .plan-entry .pr-name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plan-entry .plan-btn { min-height: 28px; padding: 2px 8px; flex: none; }
+  .g-block.is-ta { outline: 2px dashed var(--on-bar); outline-offset: -4px; }
 
   /* --- week view --- */
   .legend {
@@ -379,6 +466,11 @@
 
   @media (max-width: 640px) {
     body { padding: 10px 12px 12px; }
+    .plan-layout { grid-template-columns: 1fr; }
+    .plan-aside { position: static; max-height: none; overflow: visible; overscroll-behavior: auto; padding: 0; border: 0; background: transparent; }
+    .plan-actions { margin-left: 0; }
+    .plan-row .plan-btn { min-height: 44px; }
+    .plan-select, .plan-day { min-height: 44px; }
     .data-status { min-height: 0; margin: 0; font-size: 0.62rem; line-height: 1.2; }
     .masthead { grid-template-columns: 1fr; gap: 6px; margin-bottom: 4px; }
     .stat-card, .accent-card { display: none; }
@@ -464,7 +556,8 @@
     :root { --row-h: 22px; --head-h: 34px; }
     body { padding: 0; background: #fff; color: #000; }
     .shell { border: 0; border-radius: 0; padding: 0; background: #fff; }
-    .controls, .legend, .course-tools, .notes, .data-status { display: none; }
+    .controls, .legend, .course-tools, .notes, .data-status,
+    .plan-actions, .plan-aside, .plan-search { display: none; }
     .wrap { max-width: none; }
     .grid { min-width: 0; }
     .g-block, .tag, .masthead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -482,6 +575,7 @@
 <input class="sr" type="radio" name="view" id="v-week" checked>
 <input class="sr" type="radio" name="view" id="v-courses">
 <input class="sr" type="radio" name="view" id="v-exams">
+<input class="sr" type="radio" name="view" id="v-plan">
 </nav>
 
 <div class="wrap shell">
@@ -515,11 +609,13 @@
       <label for="v-week">Week</label>
       <label for="v-courses">Courses</label>
       <label for="v-exams">Exams</label>
+      <label for="v-plan">Plan</label>
     </div>
     <button id="theme-toggle" type="button">Dark mode</button>
   </nav>
 
   <p id="data-status" class="data-status" role="status" aria-live="polite" aria-atomic="true">Loading schedule…</p>
+  <p id="plan-announcer" class="sr" role="status" aria-live="polite" aria-atomic="true"></p>
 
   <noscript><p class="noscript">This timetable renders from its schedule data with JavaScript. Enable JavaScript to view it.</p></noscript>
 
@@ -951,6 +1047,37 @@ const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 let TERMS = CURATED_TERMS;
 let dataStatus = document.getElementById("data-status");
 
+/* --- personal plan --- */
+const PLAN_KEY = "cei-plan-v1";
+function readPlan() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PLAN_KEY) || "[]");
+    if (!Array.isArray(raw)) return [];
+    const seen = new Set();
+    return raw.filter((e) => {
+      if (!e || (typeof e.code !== "string" && typeof e.key !== "string") ||
+        (e.term !== "t1" && e.term !== "t2") || (e.role !== "take" && e.role !== "ta")) return false;
+      const candidate = typeof e.key === "string" && e.key
+        ? e.key
+        : e.code + (typeof e.year === "string" ? "@" + e.year : "");
+      e.key = candidate;
+      const seenKey = e.term + ":" + e.key;
+      if (seen.has(seenKey)) return false;
+      seen.add(seenKey);
+      return true;
+    });
+  } catch (err) { return []; }
+}
+let plan = readPlan();
+function savePlan() {
+  try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); } catch (err) { /* storage unavailable */ }
+}
+const selectedTermId = () => {
+  const el = document.querySelector('input[name="term"]:checked');
+  return el && el.id === "tt-t2" ? "t2" : "t1";
+};
+let planFilter = { cohort: "all", credit: "", days: [], hideConflicts: false, sort: "name" };
+
 const hhmm = (s) => (s || "").slice(0, 5);
 const minutes = (t) => toMin(t);
 const dayName = (n) => WEEKDAYS[Number(n) - 1] || null;
@@ -1268,7 +1395,7 @@ function setDataStatus(text) {
 
 function snapshotUi() {
   const searches = {};
-  document.querySelectorAll(".course-search").forEach((input) => { searches[input.id] = input.value; });
+  document.querySelectorAll(".course-search, .plan-search").forEach((input) => { searches[input.id] = input.value; });
   const notes = [...document.querySelectorAll("details.notes")].map((d) => d.open);
   const active = document.activeElement;
   return {
@@ -1376,11 +1503,13 @@ function renderWeek(year) {
       const laneStyle = cols > 1
         ? (overlaps(s) > 1 ? `;grid-column:${lane + 1}` : `;grid-column:1 / -1`)
         : "";
-      h += `<div class="g-block type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
+      const isTa = s.course.planRole === "TA";
+      h += `<div class="g-block${isTa ? " is-ta" : ""} type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
         (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "") +
+        (isTa ? `<span class="gb-tag">TA</span>` : "") +
         `</div>`;
     });
     h += "</div>";
@@ -1453,6 +1582,514 @@ function renderExams(year) {
     `<tbody>${rows}</tbody></table>`;
 }
 
+/* --- plan builder --- */
+const GENED = {};
+const GENED_DEPT = "95";
+
+function genedUrl(config) {
+  const p = new URLSearchParams({
+    function: "get-teach-table-show",
+    level_id: "1",
+    mode: "by_class",
+    selected_year: config.year,
+    selected_semester: config.semester,
+    selected_faculty: "90",
+    selected_department: GENED_DEPT,
+    selected_curriculum: "0",
+    selected_class_year: "0",
+    search_all_faculty: "0",
+    search_all_department: "0",
+    search_all_curriculum: "1",
+    search_all_class_year: "1"
+  });
+  return API_PATH + "?" + p.toString();
+}
+
+function genedCoursesFromRows(rows) {
+  const groups = new Map();
+  for (const row of rows) {
+    if (!schedulable(row)) continue;
+    const pair = row.sec_pair ? [row.section, row.sec_pair].sort((a, b) => Number(a) - Number(b) || a.localeCompare(b)) : [row.section];
+    const anchor = pair[0];
+    if (!anchor) continue;
+    const key = `${row.subject_id}#${anchor}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  }
+  return [...groups.entries()].map(([key, groupRows]) => {
+    const course = makeCourse(groupRows[0].subject_id, groupRows, null);
+    if (!course.sessions.length) return null;
+    return { ...course, key, section: key.slice(key.indexOf("#") + 1), type: "gened", planYear: "Gen Ed" };
+  }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function loadGened(termId) {
+  const state = GENED[termId];
+  if (state && state.status !== "idle") return;
+  const config = TERM_CONFIG.find((t) => t.id === termId);
+  if (!config) return;
+  GENED[termId] = { status: "loading", courses: [] };
+  fetchJson(genedUrl(config), 20000)
+    .then((payload) => {
+      if (!GENED[termId] || GENED[termId].status !== "loading") return;
+      GENED[termId] = { status: "ready", courses: genedCoursesFromRows(flattenRows(payload, false)) };
+    })
+    .catch(() => {
+      if (!GENED[termId] || GENED[termId].status !== "loading") return;
+      GENED[termId] = { status: "error", courses: [] };
+    })
+    .then(() => refreshPlan());
+}
+
+function planCourses(termId) {
+  const term = TERMS.find((t) => t.id === termId);
+  if (!term) return [];
+  const pool = new Map();
+  for (const year of term.years) {
+    for (const course of year.courses) {
+      const entry = { ...course, key: `${course.code}@${year.id}`, planYear: year.label };
+      if (!pool.has(entry.key)) pool.set(entry.key, entry);
+      if (!pool.has(course.code)) pool.set(course.code, { ...entry, key: course.code });
+    }
+  }
+  const gened = GENED[termId];
+  if (gened && gened.status === "ready") {
+    for (const course of gened.courses) if (!pool.has(course.key)) pool.set(course.key, course);
+  }
+  const out = [];
+  const seenCodes = new Set();
+  for (const entry of plan) {
+    if (entry.term !== termId) continue;
+    const course = pool.get(entry.key);
+    if (!course || seenCodes.has(course.code)) continue;
+    seenCodes.add(course.code);
+    const labSessions = course.sessions.filter((s) => s.type === "lab" || (!s.type && course.type === "lab"));
+    const hasLab = labSessions.length > 0;
+    const isTa = entry.role === "ta" && hasLab;
+    out.push({
+      ...course,
+      hasLab,
+      planRole: isTa ? "TA" : "take",
+      sessions: isTa ? labSessions : course.sessions
+    });
+  }
+  return out;
+}
+
+function planConflicts(courses) {
+  const hits = [];
+  for (let i = 0; i < courses.length; i++) {
+    for (let j = i + 1; j < courses.length; j++) {
+      const a = courses[i], b = courses[j];
+      for (const s of a.sessions) {
+        for (const t of b.sessions) {
+          if (s.day !== t.day) continue;
+          if (toMin(s.start) < toMin(t.end) && toMin(t.start) < toMin(s.end)) {
+            hits.push(`${a.name} ↔ ${b.name} · ${s.day} ${s.start}–${s.end}`);
+          }
+        }
+      }
+      for (const kind of ["mid", "final"]) {
+        if (a.planRole === "TA" || b.planRole === "TA") break;
+        const day = a.exams[kind];
+        if (!day || day !== b.exams[kind]) continue;
+        if (a.exams.time && b.exams.time && a.exams.time !== b.exams.time) continue;
+        hits.push(`${a.name} ↔ ${b.name} · ${kind} exam ${fmtDate(day)}`);
+      }
+    }
+  }
+  return [...new Set(hits)];
+}
+
+function courseCredits(c) {
+  const n = parseInt(c.credits, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function courseHasDay(c, days) {
+  return !days.length || c.sessions.some((s) => days.includes(s.day));
+}
+
+function courseClashesWithPlan(c, planList) {
+  return c.sessions.some((s) => planList.some((x) => x.sessions.some((t) =>
+    t.day === s.day && toMin(s.start) < toMin(t.end) && toMin(t.start) < toMin(s.end))));
+}
+
+function earliestMinute(c) {
+  const vals = c.sessions.map((s) => DAY_ORDER.indexOf(s.day) * 1440 + toMin(s.start)).filter((n) => n >= 0);
+  return vals.length ? Math.min(...vals) : Infinity;
+}
+
+function sortPlanOptions(items, sort) {
+  return items.slice().sort((a, b) => {
+    if (sort === "code") return a.course.code.localeCompare(b.course.code, undefined, { numeric: true });
+    if (sort === "time") return earliestMinute(a.course) - earliestMinute(b.course) || a.course.name.localeCompare(b.course.name);
+    if (sort === "credits") {
+      const ca = courseCredits(a.course), cb = courseCredits(b.course);
+      return (ca === null ? 99 : ca) - (cb === null ? 99 : cb) || a.course.name.localeCompare(b.course.name);
+    }
+    return a.course.name.localeCompare(b.course.name);
+  });
+}
+
+function renderPlanPanel(termId) {
+  const term = TERMS.find((t) => t.id === termId);
+  if (!term) return "";
+  const courses = planCourses(termId);
+  const clashes = planConflicts(courses);
+  const inPlan = new Set(courses.map((c) => c.code));
+  const gened = GENED[termId] || { status: "idle", courses: [] };
+
+  const entries = courses.length ? courses.map((c) =>
+    `<li class="plan-row plan-entry">` +
+      `<span class="plan-badge">${esc(c.planYear)}</span>` +
+      `<span class="pr-name">${esc(c.name)}<span class="pr-meta"> · ${esc(c.code)}` +
+        `${c.section ? " · Sec " + esc(c.section) : ""}</span></span>` +
+      (c.hasLab
+        ? `<button type="button" class="plan-btn" data-plan-role="${esc(c.key)}" data-focus="role-${esc(c.key)}"` +
+          ` aria-pressed="${c.planRole === "TA"}" aria-label="Assist the lab (TA) for ${esc(c.name)}">TA</button>`
+        : "") +
+      `<button type="button" class="plan-btn" data-plan-remove="${esc(c.key)}" data-focus="remove-${esc(c.key)}"` +
+        ` aria-label="Remove ${esc(c.name)} from plan">&times;</button>` +
+    `</li>`
+  ).join("") : `<li class="plan-empty">No courses yet. Add one from the list.</li>`;
+
+  const baseOptions = term.years.flatMap((year) => year.courses
+    .filter((c) => !inPlan.has(c.code))
+    .map((c) => ({ course: c, key: `${c.code}@${year.id}`, badge: year.label, group: year.id, groupLabel: year.label })))
+    .concat(gened.courses
+      .filter((c) => !inPlan.has(c.code))
+      .map((c) => ({ course: c, key: c.key, badge: "Gen Ed", group: "gened", groupLabel: "Gen Ed" })));
+
+  const groupsOrdered = term.years.map((y) => ({ key: y.id, label: y.label }))
+    .concat([{ key: "gened", label: gened.status === "ready" ? `Gen Ed (${gened.courses.length})` : "Gen Ed" }]);
+  const creditValues = [...new Set(baseOptions.map((o) => courseCredits(o.course)).filter((n) => n !== null))].sort((a, b) => a - b);
+
+  const filteredOptions = baseOptions.filter((o) => {
+    if (planFilter.cohort !== "all" && o.group !== planFilter.cohort) return false;
+    if (planFilter.credit !== "" && courseCredits(o.course) !== Number(planFilter.credit)) return false;
+    if (!courseHasDay(o.course, planFilter.days)) return false;
+    if (planFilter.hideConflicts && courseClashesWithPlan(o.course, courses)) return false;
+    return true;
+  });
+
+  const groups = [];
+  const groupIndex = new Map();
+  for (const option of filteredOptions) {
+    if (!groupIndex.has(option.group)) {
+      const group = { key: option.group, label: option.groupLabel, items: [] };
+      groupIndex.set(option.group, group);
+      groups.push(group);
+    }
+    groupIndex.get(option.group).items.push(option);
+  }
+  groups.sort((a, b) => groupsOrdered.findIndex((g) => g.key === a.key) - groupsOrdered.findIndex((g) => g.key === b.key));
+
+  const optionHtml = groups.map((group) =>
+    `<div class="plan-group" data-group="${esc(group.key)}"><h4>${esc(group.label)}</h4><ul class="plan-list">` +
+      sortPlanOptions(group.items, planFilter.sort).map(({ course: c, key, badge }) => {
+        const search = [c.name, c.code, badge, c.section || "", ...c.lecturers].join(" ").toLowerCase();
+        const times = c.sessions.map((s) => `${s.day} ${s.start}–${s.end}`).join(", ");
+        const meta = `${c.code}${c.section ? " · Sec " + c.section : ""} · ${times}`;
+        const label = c.section ? `${c.name} section ${c.section}` : c.name;
+        return `<li class="plan-row" data-search="${esc(search)}">` +
+          `<span class="plan-badge">${esc(badge)}</span>` +
+          `<span class="pr-name">${esc(c.name)}<span class="pr-meta"> · ${esc(meta)}</span></span>` +
+          `<button type="button" class="plan-btn" data-plan-add="${esc(key)}" data-focus="add-${esc(key)}"` +
+            ` aria-label="Add ${esc(label)} to plan">Add</button>` +
+        `</li>`;
+      }).join("") +
+    `</ul></div>`
+  ).join("");
+
+  const filterActive = planFilter.cohort !== "all" || planFilter.credit !== "" ||
+    planFilter.days.length > 0 || planFilter.hideConflicts;
+
+  const controls =
+    `<div class="plan-controls">` +
+      `<label class="plan-field"><span>Sort</span><select class="plan-select" data-plan-sort data-focus="sort">` +
+        [["name", "Name"], ["code", "Code"], ["time", "Day & time"], ["credits", "Credits"]]
+          .map(([value, label]) => `<option value="${value}"${planFilter.sort === value ? " selected" : ""}>${label}</option>`).join("") +
+      `</select></label>` +
+      `<label class="plan-field"><span>Cohort</span><select class="plan-select" data-plan-cohort data-focus="cohort">` +
+        `<option value="all">All</option>` +
+        groupsOrdered.map((g) => `<option value="${g.key}"${planFilter.cohort === g.key ? " selected" : ""}>${esc(g.label)}</option>`).join("") +
+      `</select></label>` +
+    `</div>` +
+    `<div class="plan-controls plan-days">` +
+      ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) =>
+        `<button type="button" class="plan-btn plan-day" data-plan-day="${d}" data-focus="day-${d}"` +
+          ` aria-pressed="${planFilter.days.includes(d)}">${d}</button>`).join("") +
+    `</div>` +
+    `<div class="plan-controls">` +
+      `<label class="plan-field"><span>Credits</span><select class="plan-select" data-plan-credit data-focus="credit">` +
+        `<option value="">Any</option>` +
+        creditValues.map((n) => `<option value="${n}"${planFilter.credit === String(n) ? " selected" : ""}>${n}</option>`).join("") +
+      `</select></label>` +
+      `<label class="plan-check"><input type="checkbox" data-plan-hide-conflicts data-focus="hide-conflicts"` +
+        `${planFilter.hideConflicts ? " checked" : ""}> Hide conflicting</label>` +
+      (filterActive ? `<button type="button" class="plan-btn" data-plan-filter-clear data-focus="filter-clear">Clear</button>` : "") +
+    `</div>`;
+
+  const genedStatus = gened.status === "loading"
+    ? `<p class="plan-gened-status">Loading Gen Ed courses…</p>`
+    : gened.status === "error"
+      ? `<p class="plan-gened-status">Gen Ed courses unavailable. ` +
+        `<button type="button" class="plan-btn" data-plan-gened-retry>Retry</button></p>`
+      : "";
+
+  const conflictHtml = clashes.length
+    ? `<ul>${clashes.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>`
+    : `<p>No conflicts.</p>`;
+
+  return `<section class="panel" id="p-plan" aria-label="My plan for ${esc(term.label)}">` +
+    `<div class="plan-head">` +
+      `<h2>My plan · ${esc(term.label)}</h2>` +
+      `<p class="plan-meta">${courses.length} ${courses.length === 1 ? "course" : "courses"} · ` +
+        `${clashes.length} ${clashes.length === 1 ? "conflict" : "conflicts"}</p>` +
+      `<div class="plan-actions">` +
+        `<button type="button" class="plan-btn" data-plan-download>Download PNG</button>` +
+        `<button type="button" class="plan-btn" data-plan-clear data-focus="clear">Clear term</button>` +
+      `</div>` +
+    `</div>` +
+    `<div class="plan-conflicts">${conflictHtml}</div>` +
+    `<div class="plan-layout">` +
+      `<div class="plan-main">${renderWeek({ courses })}</div>` +
+      `<aside class="plan-aside" aria-label="Plan courses">` +
+        `<section><h3>In this plan</h3><ul class="plan-list">${entries}</ul></section>` +
+        `<section class="plan-picker"><h3>Add a course</h3>${genedStatus}` +
+          `<input class="plan-search" type="search" id="plan-search" placeholder="Search course, code, lecturer"` +
+            ` aria-label="Search all ${esc(term.label)} courses to add">` +
+          controls +
+          `${optionHtml}` +
+          `<p class="empty" hidden>No courses match the filters.</p>` +
+        `</section>` +
+      `</aside>` +
+    `</div>` +
+    `</section>`;
+}
+
+function applyPlanFilter() {
+  const panel = document.getElementById("p-plan");
+  const input = document.getElementById("plan-search");
+  if (!panel || !input) return;
+  const q = input.value.trim().toLowerCase();
+  let shown = 0;
+  panel.querySelectorAll(".plan-group").forEach((group) => {
+    let groupShown = 0;
+    group.querySelectorAll(".plan-row").forEach((row) => {
+      const ok = !q || row.dataset.search.includes(q);
+      row.hidden = !ok;
+      if (ok) groupShown++;
+    });
+    group.hidden = groupShown === 0;
+    shown += groupShown;
+  });
+  const empty = panel.querySelector(".plan-picker .empty");
+  if (empty) empty.hidden = shown !== 0;
+}
+
+function announcePlan(termId) {
+  const el = document.getElementById("plan-announcer");
+  if (!el || !document.getElementById("v-plan").checked) return;
+  const courses = planCourses(termId);
+  const clashes = planConflicts(courses);
+  const gened = GENED[termId];
+  const suffix = gened && gened.status === "loading" ? " Loading Gen Ed courses."
+    : gened && gened.status === "error" ? " Gen Ed courses unavailable." : "";
+  el.textContent = `Plan updated: ${courses.length} ${courses.length === 1 ? "course" : "courses"}, ` +
+    `${clashes.length} ${clashes.length === 1 ? "conflict" : "conflicts"}.${suffix}`;
+}
+
+function refreshPlan() {
+  const el = document.getElementById("p-plan");
+  if (!el) return;
+  if (document.getElementById("v-plan").checked) loadGened(selectedTermId());
+  const active = document.activeElement;
+  const focusKey = active && active.dataset ? active.dataset.focus : null;
+  const search = document.getElementById("plan-search");
+  const typed = search ? search.value : "";
+  const aside = el.querySelector(".plan-aside");
+  const asideTop = aside ? aside.scrollTop : 0;
+  const scrollY = window.scrollY;
+  el.outerHTML = renderPlanPanel(selectedTermId());
+  window.scrollTo(0, scrollY);
+  const nextAside = document.querySelector(".plan-aside");
+  if (nextAside) nextAside.scrollTop = asideTop;
+  const next = document.getElementById("plan-search");
+  if (next) next.value = typed;
+  applyPlanFilter();
+  announcePlan(selectedTermId());
+  applyTodayHighlight();
+  if (focusKey) {
+    const target = document.querySelector(`[data-focus="${focusKey}"]`);
+    if (target) target.focus({ preventScroll: true });
+    else if (focusKey.startsWith("add-") || focusKey.startsWith("remove-") || focusKey === "filter-clear") {
+      document.getElementById("plan-search")?.focus({ preventScroll: true });
+    }
+  }
+}
+
+function togglePlan(termId, key) {
+  const i = plan.findIndex((e) => e.term === termId && e.key === key);
+  if (i >= 0) plan.splice(i, 1);
+  else plan.push({ term: termId, key, role: "take" });
+  savePlan();
+  refreshPlan();
+}
+
+function togglePlanRole(termId, key) {
+  const entry = plan.find((e) => e.term === termId && e.key === key);
+  if (!entry) return;
+  entry.role = entry.role === "ta" ? "take" : "ta";
+  savePlan();
+  refreshPlan();
+}
+
+function clearPlanTerm(termId) {
+  plan = plan.filter((e) => e.term !== termId);
+  savePlan();
+  refreshPlan();
+}
+
+function fitText(ctx, text, max) {
+  if (ctx.measureText(text).width <= max) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + "…").width > max) t = t.slice(0, -1);
+  return t + "…";
+}
+
+function exportPlanPng(termId) {
+  const courses = planCourses(termId);
+  if (!courses.length) return;
+  const term = TERMS.find((t) => t.id === termId);
+
+  const draw = () => {
+    const days = courses.some((c) => c.sessions.some((s) => s.day === "Sat")) ? [...DAYS, "Sat"] : DAYS;
+    const slotH = 44, headH = 46, timeW = 68, pad = 22, footH = 34, colW = 190;
+    const width = pad * 2 + timeW + colW * days.length;
+    const height = pad * 2 + headH + slotH * SLOTS + footH;
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name) => cs.getPropertyValue(name).trim();
+    const ink = v("--ink"), muted = v("--muted"), line = v("--line");
+    const bars = {
+      red: v("--bar-red"), green: v("--bar-green"), blue: v("--bar-blue"),
+      magenta: v("--bar-magenta"), purple: v("--bar-purple"), teal: v("--bar-teal")
+    };
+    const sans = "'IBM Plex Sans Thai', Arial, sans-serif";
+
+    ctx.fillStyle = v("--bg");
+    ctx.fillRect(0, 0, width, height);
+    ctx.textBaseline = "top";
+    ctx.fillStyle = ink;
+    ctx.font = `600 18px ${sans}`;
+    ctx.fillText(`CEI Schedule · Plan ${term ? term.label : ""}`, pad, pad);
+
+    const gridX = pad + timeW;
+    const gridY = pad + headH;
+    ctx.fillStyle = muted;
+    ctx.font = `500 11px ${sans}`;
+    ctx.textAlign = "center";
+    days.forEach((d, i) => ctx.fillText(d.toUpperCase(), gridX + colW * (i + 0.5), pad + headH - 18));
+    ctx.textAlign = "left";
+
+    for (let r = 0; r < SLOTS; r++) {
+      const y = gridY + r * slotH;
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(gridX, y);
+      ctx.lineTo(width - pad, y);
+      ctx.stroke();
+      if ((DAY_START + r * SLOT) % 60 === 0) {
+        ctx.fillStyle = muted;
+        ctx.font = `500 11px ${sans}`;
+        ctx.fillText(fmtTime(DAY_START + r * SLOT), pad, y - 5);
+      }
+    }
+    days.forEach((_, i) => {
+      const x = gridX + colW * i;
+      ctx.strokeStyle = line;
+      ctx.beginPath();
+      ctx.moveTo(x, gridY);
+      ctx.lineTo(x, gridY + slotH * SLOTS);
+      ctx.stroke();
+    });
+
+    days.forEach((d, dayIndex) => {
+      const daySessions = [];
+      courses.forEach((c) => c.sessions.forEach((s) => { if (s.day === d) daySessions.push({ c, s }); }));
+      daySessions.sort((a, b) => toMin(a.s.start) - toMin(b.s.start));
+      const laneEnds = [];
+      const placed = daySessions.map(({ c, s }) => {
+        let lane = laneEnds.findIndex((end) => end <= toMin(s.start));
+        if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+        laneEnds[lane] = toMin(s.end);
+        return { c, s, lane };
+      });
+      const lanes = Math.max(1, laneEnds.length);
+      placed.forEach(({ c, s, lane }) => {
+        const startRow = (toMin(s.start) - DAY_START) / SLOT;
+        const span = (toMin(s.end) - toMin(s.start)) / SLOT;
+        const w = (colW - 6) / lanes;
+        const x = gridX + colW * dayIndex + 3 + w * lane;
+        const y = gridY + startRow * slotH + 2;
+        const h = Math.max(slotH - 4, span * slotH - 4);
+        ctx.fillStyle = bars[c.color] || bars.blue;
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, 7);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, w, h);
+        }
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `500 10px ${sans}`;
+        ctx.fillText(`${s.start}–${s.end}`, x + 8, y + 6);
+        ctx.font = `600 11px ${sans}`;
+        ctx.fillText(fitText(ctx, c.name, w - 16), x + 8, y + 20);
+        if (s.room && h > 42) {
+          ctx.font = `400 10px ${sans}`;
+          ctx.fillText(fitText(ctx, s.room, w - 16), x + 8, y + 34);
+        }
+        if (c.planRole === "TA") {
+          ctx.setLineDash([4, 3]);
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+          ctx.setLineDash([]);
+        }
+      });
+    });
+
+    ctx.fillStyle = muted;
+    ctx.font = `400 11px ${sans}`;
+    ctx.fillText(`Exported ${new Date().toLocaleDateString("en-GB")} · plan saved in this browser only`,
+      pad, height - pad - 12);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `cei-plan-${termId}-${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+  };
+
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw, draw);
+  else draw();
+}
+
 const YEAR_IDS = ["y1", "y2", "y3", "y4"];
 const YEAR_LABELS = { y1: "1st Year", y2: "2nd Year", y3: "3rd Year", y4: "4th Year" };
 
@@ -1474,7 +2111,7 @@ function panelHtml() {
         `<details class="notes"><summary>Notes on credits and exam arrangements</summary><ul>${notes}</ul></details>` +
         `</section>`;
     }).join("")
-  ).join("");
+  ).join("") + renderPlanPanel(selectedTermId());
 }
 
 // Search: filters the visible year's course cards.
@@ -1516,11 +2153,13 @@ function renderAll() {
     if (input) input.value = value;
   });
   wireSearch();
+  applyPlanFilter();
   applyTodayHighlight();
   restoreUi(ui);
 }
 
 renderAll();
+if (document.getElementById("v-plan").checked) refreshPlan();
 loadLiveData();
 
 // Theme toggle: explicit choice wins, otherwise follow the OS.
@@ -1539,6 +2178,67 @@ toggle.addEventListener("click", () => {
   labelToggle();
 });
 labelToggle();
+
+// Plan actions: delegated, so every re-render keeps working.
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-plan-add],[data-plan-remove],[data-plan-role],[data-plan-clear],[data-plan-download],[data-plan-gened-retry],[data-plan-day],[data-plan-filter-clear]");
+  if (!btn) return;
+  const termId = selectedTermId();
+  if (btn.hasAttribute("data-plan-add")) togglePlan(termId, btn.dataset.planAdd);
+  else if (btn.hasAttribute("data-plan-remove")) togglePlan(termId, btn.dataset.planRemove);
+  else if (btn.hasAttribute("data-plan-role")) togglePlanRole(termId, btn.dataset.planRole);
+  else if (btn.hasAttribute("data-plan-download")) exportPlanPng(termId);
+  else if (btn.hasAttribute("data-plan-gened-retry")) {
+    GENED[termId] = { status: "idle", courses: [] };
+    loadGened(termId);
+    refreshPlan();
+  }
+  else if (btn.hasAttribute("data-plan-day")) {
+    const day = btn.dataset.planDay;
+    const i = planFilter.days.indexOf(day);
+    if (i >= 0) planFilter.days.splice(i, 1);
+    else planFilter.days.push(day);
+    refreshPlan();
+  }
+  else if (btn.hasAttribute("data-plan-filter-clear")) {
+    planFilter = { cohort: "all", credit: "", days: [], hideConflicts: false, sort: planFilter.sort };
+    const search = document.getElementById("plan-search");
+    if (search) search.value = "";
+    refreshPlan();
+  }
+  else if (btn.hasAttribute("data-plan-clear")) {
+    if (btn.dataset.armed === "1") {
+      clearPlanTerm(termId);
+    } else {
+      btn.dataset.armed = "1";
+      btn.textContent = "Click again to clear";
+      btn.focus({ preventScroll: true });
+    }
+  }
+});
+document.addEventListener("input", (e) => {
+  if (e.target && e.target.id === "plan-search") applyPlanFilter();
+});
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if (!el || !el.hasAttribute) return;
+  if (el.hasAttribute("data-plan-sort")) planFilter.sort = el.value;
+  else if (el.hasAttribute("data-plan-cohort")) planFilter.cohort = el.value;
+  else if (el.hasAttribute("data-plan-credit")) planFilter.credit = el.value;
+  else if (el.hasAttribute("data-plan-hide-conflicts")) planFilter.hideConflicts = el.checked;
+  else return;
+  refreshPlan();
+});
+document.querySelectorAll('input[name="term"]').forEach((radio) => radio.addEventListener("change", () => {
+  if (!document.getElementById("v-plan").checked) return;
+  loadGened(selectedTermId());
+  refreshPlan();
+}));
+document.querySelectorAll('input[name="view"]').forEach((radio) => radio.addEventListener("change", () => {
+  if (!document.getElementById("v-plan").checked) return;
+  loadGened(selectedTermId());
+  refreshPlan();
+}));
 </script>
 </body>
 </html>
