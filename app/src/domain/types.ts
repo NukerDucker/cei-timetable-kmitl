@@ -121,6 +121,8 @@ export interface PlanEntry {
   /** `${term}/${courseCode}/${sectionNumber}` */
   sectionId: string
   role: Role
+  /** Cohort picked under; disambiguates the same code offered to several cohorts. */
+  cohort?: CohortId
 }
 
 export interface StoredPlan {

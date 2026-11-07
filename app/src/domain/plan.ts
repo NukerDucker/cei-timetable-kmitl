@@ -3,6 +3,7 @@ import { readGenedCache } from './gened'
 import { parseSectionId, sectionId } from './section'
 import { browserStorage, readStorageJson, writeStorageJson } from './storage'
 import type {
+  CohortId,
   Course,
   GenEdState,
   PlanCourse,
@@ -78,8 +79,14 @@ interface FoundCourse {
   planYear: string
 }
 
-function findCeiCourse(term: Term, code: string, number?: string): FoundCourse | null {
+function findCeiCourse(
+  term: Term,
+  code: string,
+  number?: string,
+  cohort?: string,
+): FoundCourse | null {
   for (const year of term.years) {
+    if (cohort && year.id !== cohort) continue
     for (const course of year.courses) {
       if (course.code !== code) continue
       const section = findSection(course, number ?? '')
@@ -108,8 +115,9 @@ function findCourse(
   gened: GenEdState | undefined,
   code: string,
   number?: string,
+  cohort?: string,
 ): FoundCourse | null {
-  return findCeiCourse(term, code, number) ?? findGenedCourse(gened, code, number)
+  return findCeiCourse(term, code, number, cohort) ?? findGenedCourse(gened, code, number)
 }
 
 /**
@@ -152,6 +160,7 @@ interface LegacyEntry {
   term: TermId
   key: string
   role: Role
+  cohort?: CohortId
 }
 
 function parseLegacyEntries(raw: unknown): LegacyEntry[] {
@@ -171,10 +180,16 @@ function parseLegacyEntries(raw: unknown): LegacyEntry[] {
         ? rawKey
         : (code ?? '') + (typeof value.year === 'string' ? '@' + value.year : '')
     if (!candidate) continue
+    const at = candidate.indexOf('@')
+    const rawCohort = at >= 0 ? candidate.slice(at + 1) : value.year
+    const cohort =
+      rawCohort === 'y1' || rawCohort === 'y2' || rawCohort === 'y3' || rawCohort === 'y4'
+        ? (rawCohort as CohortId)
+        : undefined
     const seenKey = term + ':' + candidate
     if (seen.has(seenKey)) continue
     seen.add(seenKey)
-    out.push({ term, key: candidate, role: value.role })
+    out.push({ term, key: candidate, role: value.role, ...(cohort ? { cohort } : {}) })
   }
   return out
 }
@@ -187,7 +202,12 @@ function normalizeLegacyEntries(raw: unknown, context: PlanContext): PlanEntry[]
     const seenKey = legacy.term + ':' + id
     if (seen.has(seenKey)) continue
     seen.add(seenKey)
-    entries.push({ term: legacy.term, sectionId: id, role: legacy.role })
+    entries.push({
+      term: legacy.term,
+      sectionId: id,
+      role: legacy.role,
+      ...(legacy.cohort ? { cohort: legacy.cohort } : {}),
+    })
   }
   return entries
 }
@@ -204,7 +224,12 @@ function parseV2(raw: unknown): PlanEntry[] | null {
     const seenKey = term + ':' + id
     if (seen.has(seenKey)) continue
     seen.add(seenKey)
-    entries.push({ term, sectionId: id, role: value.role })
+    const rawCohort = value.cohort
+    const cohort =
+      rawCohort === 'y1' || rawCohort === 'y2' || rawCohort === 'y3' || rawCohort === 'y4'
+        ? (rawCohort as CohortId)
+        : undefined
+    entries.push({ term, sectionId: id, role: value.role, ...(cohort ? { cohort } : {}) })
   }
   return entries
 }
@@ -291,8 +316,8 @@ export function resolvePlanEntry(
   gened?: GenEdState,
 ): ResolvedPlanEntry | null {
   const parsed = parseSectionId(entry.sectionId)
-  if (!parsed) return null
-  const found = findCourse(term, gened, parsed.code, parsed.number)
+  if (!parsed || !parsed.number) return null
+  const found = findCourse(term, gened, parsed.code, parsed.number, entry.cohort)
   if (!found) return null
   return { entry, course: found.course, section: found.section, planYear: found.planYear }
 }

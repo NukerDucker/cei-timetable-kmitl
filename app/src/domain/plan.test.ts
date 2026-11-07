@@ -73,7 +73,7 @@ describe('legacy plan migration', () => {
       [PLAN_KEY]: JSON.stringify([{ term: 't1', code: '01276222', year: 'y2', role: 'ta' }]),
     })
     expect(readPlan(storage, context())).toEqual([
-      { term: 't1', sectionId: 't1/01276222/902', role: 'ta' },
+      { term: 't1', sectionId: 't1/01276222/902', role: 'ta', cohort: 'y2' },
     ])
   })
 })
@@ -188,12 +188,33 @@ describe('plan resolution', () => {
     expect(course?.key).toBe('t1/96649999/901')
   })
 
+  it('resolves the same code against the entry cohort', () => {
+    const [y3] = planCourses(
+      't2',
+      [{ term: 't2', sectionId: 't2/01276722/901', role: 'take', cohort: 'y3' }],
+      context(),
+    )
+    const [y4] = planCourses(
+      't2',
+      [{ term: 't2', sectionId: 't2/01276722/901', role: 'take', cohort: 'y4' }],
+      context(),
+    )
+    expect(y3?.planYear).toBe('3rd Year')
+    expect(y4?.planYear).toBe('4th Year')
+  })
+
+  it('does not resolve an empty section number', () => {
+    const entries = [{ term: 't1', sectionId: 't1/01276111/', role: 'take' as const }]
+    expect(planCourses('t1', entries, context())).toHaveLength(0)
+    expect(unresolvedCount('t1', entries, context(true))).toBe(1)
+  })
+
   it('uses only the first entry per course code', () => {
     const resolved = planCourses(
       't1',
       [
         { term: 't1', sectionId: 't1/01276111/905', role: 'take' },
-        { term: 't1', sectionId: 't1/01276111/1905', role: 'ta' },
+        { term: 't1', sectionId: 't1/01276111/905', role: 'ta' },
       ],
       context(),
     )
