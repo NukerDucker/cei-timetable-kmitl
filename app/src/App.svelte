@@ -48,7 +48,7 @@
 
 <div class="min-h-dvh bg-background text-foreground">
   <header class="material-bar sticky top-0 z-20 border-b">
-    <div class="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3">
+    <div class="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
       <div class="min-w-0">
         <p class="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           KMITL · Faculty of Engineering
@@ -57,9 +57,20 @@
           CEI Schedule
         </h1>
       </div>
-      <span class="ml-auto shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-        {term?.label ?? '—'}
-      </span>
+      <div class="ml-auto flex min-w-0 items-center gap-2">
+        <span
+          class="min-w-0 max-w-[16rem] truncate text-[0.68rem] text-muted-foreground"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          title={state.statusText}
+        >
+          {state.statusText}
+        </span>
+        <span class="shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+          {term?.label ?? '—'}
+        </span>
+      </div>
     </div>
   </header>
 
@@ -70,14 +81,6 @@
       onprefetch={prefetch}
     />
 
-    <p
-      class="min-h-[1.25rem] text-[0.72rem] text-muted-foreground"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      {state.statusText}
-    </p>
 
     <main>
       {#if !term}
