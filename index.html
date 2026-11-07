@@ -1589,6 +1589,35 @@ function renderExams(year) {
 
 /* --- plan builder --- */
 const GENED = {};
+const GENED_CACHE_KEY = "cei-gened-cache-v2";
+const GENED_TTL = 6 * 60 * 60 * 1000;
+
+function restoreGenedCache() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(GENED_CACHE_KEY) || "null");
+    if (!raw || raw.v !== 1 || !raw.terms) return;
+    for (const termId of ["t1", "t2"]) {
+      const entry = raw.terms[termId];
+      if (entry && Array.isArray(entry.courses) && entry.courses.length) {
+        GENED[termId] = { status: "ready", courses: entry.courses, savedAt: Number(entry.savedAt) || 0 };
+      }
+    }
+  } catch (err) { /* cache unavailable */ }
+}
+
+function writeGenedCache() {
+  try {
+    const terms = {};
+    for (const termId of ["t1", "t2"]) {
+      const state = GENED[termId];
+      if (state && state.status === "ready" && state.savedAt) {
+        terms[termId] = { savedAt: state.savedAt, courses: state.courses };
+      }
+    }
+    if (!Object.keys(terms).length) return;
+    localStorage.setItem(GENED_CACHE_KEY, JSON.stringify({ v: 1, terms }));
+  } catch (err) { /* quota or storage unavailable */ }
+}
 
 function genedUrl(config) {
   const p = new URLSearchParams({
@@ -1611,6 +1640,7 @@ function genedUrl(config) {
 function genedCoursesFromRows(rows) {
   const groups = new Map();
   for (const row of rows) {
+    if (!String(row.subject_id).startsWith("966")) continue;
     if (!schedulable(row)) continue;
     const pair = row.sec_pair ? [row.section, row.sec_pair].sort((a, b) => Number(a) - Number(b) || a.localeCompare(b)) : [row.section];
     const anchor = pair[0];
@@ -1628,18 +1658,22 @@ function genedCoursesFromRows(rows) {
 
 function loadGened(termId) {
   const state = GENED[termId];
-  if (state && state.status !== "idle") return;
+  if (state && state.status === "loading") return;
+  if (state && state.status === "ready" && (state.refreshing ||
+    (state.savedAt && Date.now() - state.savedAt < GENED_TTL))) return;
   const config = TERM_CONFIG.find((t) => t.id === termId);
   if (!config) return;
-  GENED[termId] = { status: "loading", courses: [] };
+  const hadData = Boolean(state && state.status === "ready" && state.courses.length);
+  if (hadData) GENED[termId] = { ...state, refreshing: true };
+  else GENED[termId] = { status: "loading", courses: [] };
   fetchJson(genedUrl(config), 30000)
     .then((payload) => {
-      if (!GENED[termId] || GENED[termId].status !== "loading") return;
-      GENED[termId] = { status: "ready", courses: genedCoursesFromRows(flattenRows(payload, false)) };
+      GENED[termId] = { status: "ready", courses: genedCoursesFromRows(flattenRows(payload, false)), savedAt: Date.now() };
+      writeGenedCache();
     })
     .catch(() => {
-      if (!GENED[termId] || GENED[termId].status !== "loading") return;
-      GENED[termId] = { status: "error", courses: [] };
+      if (hadData) GENED[termId] = { ...state, refreshing: false };
+      else GENED[termId] = { status: "error", courses: [] };
     })
     .then(() => refreshPlan());
 }
@@ -2184,6 +2218,7 @@ function renderAll() {
   restoreUi(ui);
 }
 
+restoreGenedCache();
 renderAll();
 if (document.getElementById("v-plan").checked) refreshPlan();
 loadLiveData();
@@ -2265,6 +2300,11 @@ document.querySelectorAll('input[name="view"]').forEach((radio) => radio.addEven
   loadGened(selectedTermId());
   refreshPlan();
 }));
+// Start the GenEd request before the Plan click lands.
+const planLabel = document.querySelector('label[for="v-plan"]');
+const planRadio = document.getElementById("v-plan");
+["pointerenter", "touchstart"].forEach((event) => planLabel.addEventListener(event, () => loadGened(selectedTermId()), { passive: true }));
+planRadio.addEventListener("focus", () => loadGened(selectedTermId()));
 </script>
 </body>
 </html>
