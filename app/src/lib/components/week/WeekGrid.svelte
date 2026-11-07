@@ -1,5 +1,6 @@
 <script lang="ts">
   import { courseCategory, courseCategoryLabel } from '../../../domain/categories'
+  import type { TimeRange } from '../../../domain/filters'
   import { DAYS, DAY_START, SLOT, SLOTS, WEEKDAYS, fmtTime, minutes } from '../../../domain/time'
   import type { Category, Course, Day, Session } from '../../../domain/types'
 
@@ -7,6 +8,12 @@
     courses: Course[]
     /** Deterministic highlight for tests; omit to use the browser's weekday. */
     today?: Day | null
+    /** Dynamic visible window; defaults to the published 08:30–20:00 week. */
+    range?: TimeRange
+    /** Section IDs (`PlanCourse.key`) that take part in a conflict. */
+    conflictKeys?: readonly string[]
+    /** Section IDs rendered as TA (lab-only, dashed outline). */
+    taKeys?: readonly string[]
   }
 
   interface WeekBlock {
@@ -19,6 +26,8 @@
     span: number
     category: Category
     tag: string
+    isTa: boolean
+    isConflict: boolean
   }
 
   interface DayColumn {
@@ -27,14 +36,25 @@
     laneCount: number
   }
 
-  let { courses, today }: Props = $props()
+  let { courses, today, range, conflictKeys = [], taKeys = [] }: Props = $props()
 
-  const TIME_LABELS = Array.from({ length: SLOTS }, (_, index) => ({
-    index,
-    minute: DAY_START + index * SLOT,
-  })).filter(({ index, minute }) => index === 0 || minute % 60 === 0)
+  const activeRange = $derived<TimeRange>(range ?? { start: DAY_START, slots: SLOTS })
+  const taSet = $derived(new Set(taKeys))
+  const conflictSet = $derived(new Set(conflictKeys))
 
-  const LUNCH_ROW = (12 * 60 - DAY_START) / SLOT + 2
+  function planKey(course: Course): string | null {
+    const key = (course as { key?: unknown }).key
+    return typeof key === 'string' ? key : null
+  }
+
+  const TIME_LABELS = $derived(
+    Array.from({ length: activeRange.slots }, (_, index) => ({
+      index,
+      minute: activeRange.start + index * SLOT,
+    })).filter(({ index, minute }) => index === 0 || minute % 60 === 0),
+  )
+
+  const LUNCH_ROW = $derived((12 * 60 - activeRange.start) / SLOT + 2)
 
   function currentWeekday(): Day | null {
     const name = WEEKDAYS[new Date().getDay()]
@@ -43,7 +63,7 @@
 
   const activeToday = $derived(today === undefined ? currentWeekday() : today)
 
-  function buildDay(day: Day, source: Course[]): DayColumn {
+  function buildDay(day: Day, source: Course[], window: TimeRange): DayColumn {
     const items: { course: Course; session: Session; order: number }[] = []
     for (const course of source) {
       course.sessions.forEach((session, order) => {
@@ -69,9 +89,10 @@
       const overlaps = placed.filter(
         (other) => other.start < item.end && item.start < other.end,
       ).length
-      const snapped = DAY_START + Math.floor((item.start - DAY_START) / SLOT) * SLOT
-      const row = (snapped - DAY_START) / SLOT + 1
+      const snapped = window.start + Math.floor((item.start - window.start) / SLOT) * SLOT
+      const row = (snapped - window.start) / SLOT + 1
       const span = Math.max(1, Math.round((item.end - snapped) / SLOT))
+      const key = planKey(item.course)
       return {
         key: `${item.course.code}/${day}/${item.session.start}/${item.session.section}/${item.order}`,
         course: item.course,
@@ -82,6 +103,8 @@
         span,
         category: courseCategory(item.course),
         tag: courseCategoryLabel(item.course),
+        isTa: key !== null && taSet.has(key),
+        isConflict: key !== null && conflictSet.has(key),
       } satisfies WeekBlock
     })
 
@@ -95,7 +118,7 @@
     const days: Day[] = hasSat ? [...DAYS, 'Sat'] : [...DAYS]
     return {
       days,
-      columns: days.map((day) => buildDay(day, courses)),
+      columns: days.map((day) => buildDay(day, courses, activeRange)),
     }
   })
 
@@ -107,7 +130,7 @@
     return styles.join('; ')
   }
 
-  function blockStyle(block: WeekBlock, laneCount: number): string {
+  function blockStyle(block: WeekBlock, laneCount: number, start: number): string {
     const styles = [`grid-row: ${block.row} / span ${block.span}`]
     if (laneCount > 1) {
       styles.push(
@@ -116,13 +139,18 @@
     }
     return styles.join('; ')
   }
+
+  const gridStyle = $derived(
+    `grid-template-columns: 4rem repeat(${week.days.length}, minmax(0, 1fr)); ` +
+      `grid-template-rows: 2.75rem repeat(${activeRange.slots}, var(--week-row-h))`,
+  )
 </script>
 
-<div class="overflow-x-auto">
+<div class="week-scroll overflow-x-auto">
   <div
     class="week-grid"
     role="group"
-    style="grid-template-columns: 4rem repeat({week.days.length}, minmax(0, 1fr))"
+    style={gridStyle}
     aria-label="Weekly timetable"
   >
     <div class="corner">Time</div>
@@ -136,7 +164,7 @@
       </div>
     {/each}
 
-    {#if LUNCH_ROW >= 2 && LUNCH_ROW + 1 <= SLOTS + 1}
+    {#if LUNCH_ROW >= 2 && LUNCH_ROW + 1 <= activeRange.slots + 1}
       <div class="lunch" style="grid-row: {LUNCH_ROW} / {LUNCH_ROW + 2}">Lunch</div>
     {/if}
 
@@ -144,6 +172,7 @@
       <div
         class="day-grid"
         class:is-today={column.day === activeToday}
+        class:is-empty={column.blocks.length === 0}
         data-day={column.day}
         style={dayStyle(column, index)}
       >
@@ -151,8 +180,10 @@
           <div
             class="block"
             class:is-tight={block.span <= 2}
+            class:is-ta={block.isTa}
+            class:is-conflict={block.isConflict}
             data-category={block.category}
-            style={blockStyle(block, column.laneCount)}
+            style={blockStyle(block, column.laneCount, activeRange.start)}
             title={`${block.course.name} · ${block.session.start}–${block.session.end}`}
           >
             <span class="gb-time">{block.session.start}–{block.session.end}</span>
@@ -163,6 +194,12 @@
             <span class="gb-tag">{block.tag}</span>
             {#if block.session.type === 'lab'}
               <span class="gb-tag">Lab</span>
+            {/if}
+            {#if block.isTa}
+              <span class="gb-tag">TA</span>
+            {/if}
+            {#if block.isConflict}
+              <span class="gb-tag">Conflict</span>
             {/if}
           </div>
         {/each}
@@ -175,7 +212,6 @@
   .week-grid {
     --week-row-h: clamp(20px, 2.6vh, 30px);
     display: grid;
-    grid-template-rows: 2.75rem repeat(26, var(--week-row-h));
     min-width: 720px;
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -274,6 +310,16 @@
     background: var(--cat-gened);
   }
 
+  .block.is-ta {
+    outline: 2px dashed var(--primary-foreground);
+    outline-offset: -4px;
+  }
+
+  .block.is-conflict {
+    outline: 3px solid var(--primary-foreground);
+    outline-offset: -3px;
+  }
+
   .block > span {
     flex-shrink: 0;
   }
@@ -333,5 +379,84 @@
   .block.is-tight .gb-room,
   .block.is-tight .gb-tag {
     display: none;
+  }
+  @media (max-width: 640px) {
+    .week-scroll {
+      overflow: visible;
+    }
+
+    .week-grid {
+      display: block;
+      min-width: 0;
+      border: 0;
+    }
+
+    .corner,
+    .day-head,
+    .time,
+    .lunch {
+      display: none;
+    }
+
+    .day-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      grid-row: auto;
+      grid-column: auto;
+      border-left: 0;
+      background-image: none;
+      padding: 4px 0 8px;
+    }
+
+    .day-grid::before {
+      content: attr(data-day);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 2px 0 4px;
+    }
+
+    .day-grid.is-empty::after {
+      content: 'No classes';
+      font-size: 0.8125rem;
+      color: var(--muted-foreground);
+      padding: 2px 0 8px;
+    }
+
+    .block {
+      grid-row: auto !important;
+      grid-column: auto !important;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      min-height: 44px;
+      margin: 0 0 1px;
+      padding: 8px 10px;
+    }
+
+    .block.is-tight .gb-tag {
+      display: inline;
+    }
+
+    .gb-time {
+      flex: 0 0 86px;
+    }
+
+    .gb-name {
+      flex: 1 1 120px;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gb-room {
+      margin-left: auto;
+    }
+
+    .gb-tag {
+      flex: 0 0 auto;
+    }
   }
 </style>

@@ -99,4 +99,45 @@ describe('WeekGrid', () => {
     const today = container.querySelector('.day-head.is-today')
     expect(today?.textContent?.trim()).toBe('Tue')
   })
+
+  it('supports a dynamic range and marks TA and conflict blocks', () => {
+    const alpha = Object.assign(
+      makeCourse({
+        code: 'A001',
+        name: 'Alpha',
+        sessions: [makeSession({ day: 'Mon', start: '09:45', end: '11:15' })],
+      }),
+      { key: 'k-alpha' },
+    )
+    const beta = Object.assign(
+      makeCourse({
+        code: 'B002',
+        name: 'Beta',
+        sessions: [makeSession({ day: 'Mon', start: '10:00', end: '11:00' })],
+      }),
+      { key: 'k-beta' },
+    )
+    const { container } = render(WeekGrid, {
+      props: {
+        courses: [alpha, beta],
+        today: 'Mon',
+        range: { start: 9 * 60 + 30, slots: 10 },
+        taKeys: ['k-alpha'],
+        conflictKeys: ['k-beta'],
+      },
+    })
+
+    expect(container.querySelector('.week-grid')?.getAttribute('style')).toContain(
+      'repeat(10, var(--week-row-h))',
+    )
+    expect(container.querySelector('.time')?.textContent?.trim()).toBe('09:30')
+
+    const blocks = Array.from(container.querySelectorAll('.block'))
+    const alphaBlock = blocks.find((block) => block.textContent?.includes('Alpha'))
+    const betaBlock = blocks.find((block) => block.textContent?.includes('Beta'))
+    expect(alphaBlock).toHaveClass('is-ta')
+    expect(alphaBlock).toHaveTextContent('TA')
+    expect(betaBlock).toHaveClass('is-conflict')
+    expect(betaBlock).toHaveTextContent('Conflict')
+  })
 })

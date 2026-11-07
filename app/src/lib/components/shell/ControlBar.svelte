@@ -8,14 +8,17 @@
   interface Props {
     route: Route
     onchange: (patch: Partial<Route>) => void
+    /** Warm lazy data (GenEd) before the tab is selected. */
+    onprefetch?: (view: RouteView) => void
   }
 
-  let { route, onchange }: Props = $props()
+  let { route, onchange, onprefetch }: Props = $props()
 
   const VIEW_TABS: readonly { id: RouteView; label: string }[] = [
     { id: 'week', label: 'Week' },
     { id: 'courses', label: 'Courses' },
     { id: 'exams', label: 'Exams' },
+    { id: 'plan', label: 'Plan' },
   ]
 
   const THEME_KEY = 'timetable-theme'
@@ -62,7 +65,7 @@
 </script>
 
 <nav aria-label="Timetable controls" class="flex items-center gap-2">
-  <div class="-mx-1 min-w-0 flex-1 overflow-x-auto px-1 py-1">
+  <div class="tab-scroll -mx-1 min-w-0 flex-1 overflow-x-auto px-1 py-1">
     <div class="flex w-max items-center gap-2">
       <div class="flex shrink-0 gap-0.5 rounded-xl bg-muted p-0.5" role="group" aria-label="Term">
         {#each TERM_TABS as tab (tab.id)}
@@ -97,6 +100,9 @@
             class={tabClass(route.view === tab.id)}
             aria-pressed={route.view === tab.id}
             onclick={() => onchange({ view: tab.id })}
+            onpointerenter={() => onprefetch?.(tab.id)}
+            onfocus={() => onprefetch?.(tab.id)}
+            ontouchstart={() => onprefetch?.(tab.id)}
           >
             {tab.label}
           </button>
@@ -119,3 +125,13 @@
     {/if}
   </button>
 </nav>
+
+<style>
+  @media (max-width: 640px) {
+    .tab-scroll {
+      mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+      padding-right: 20px;
+    }
+  }
+</style>
