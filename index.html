@@ -73,7 +73,7 @@
     line-height: 1.5;
     padding: 20px 20px 48px;
   }
-  .wrap { max-width: 1224px; margin: 0 auto; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
   .shell { background: transparent; }
   .masthead {
     display: grid;
@@ -213,7 +213,7 @@
   .plan-conflicts { margin: 0 0 8px; font-size: 0.75rem; color: var(--ink); }
   .plan-conflicts p { margin: 0; color: var(--muted); }
   .plan-conflicts ul { margin: 0; padding-left: 18px; }
-  .plan-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+  .plan-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
   .plan-main { min-width: 0; }
   .plan-aside {
     position: sticky; top: 84px;
@@ -279,6 +279,10 @@
   .plan-warn { flex: 1 1 100%; font-size: 0.7rem; color: var(--ink); line-height: 1.25; }
   .g-block.is-ta { outline: 2px dashed var(--on-bar); outline-offset: -4px; }
   .g-block.is-conflict { outline: 3px solid var(--on-bar); outline-offset: -3px; }
+  .g-block.is-tight { padding: 3px 8px; gap: 0; }
+  .g-block.is-tight .gb-time { line-height: 1.2; }
+  .g-block.is-tight .gb-name { -webkit-line-clamp: 1; }
+  .g-block.is-tight .gb-room { display: none; }
 
   /* --- week view --- */
   .legend {
@@ -351,9 +355,20 @@
   .subject-blue { background: var(--bar-blue); }
   .subject-purple { background: var(--bar-purple); }
   .subject-teal { background: var(--bar-teal); }
-  .gb-time { font-size: 0.72rem; font-weight: 500; }
-  .gb-name { font-size: 0.8125rem; font-weight: 600; line-height: 1.15; }
-  .gb-room { font-size: 0.72rem; }
+  .gb-time {
+    font-size: 0.72rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gb-name {
+    font-size: 0.8125rem; font-weight: 600; line-height: 1.15;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .gb-room {
+    font-size: 0.72rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gb-time, .gb-name, .gb-room, .gb-tag { flex-shrink: 0; }
   .gb-tag {
     align-self: flex-start;
     font-size: 0.6rem; font-weight: 600;
@@ -1514,7 +1529,8 @@ function renderWeek(year, range) {
         : "";
       const isTa = s.course.planRole === "TA";
       const isConflict = Boolean(s.course.hasConflict);
-      h += `<div class="g-block${isTa ? " is-ta" : ""}${isConflict ? " is-conflict" : ""} type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
+      const isTight = span <= 2;
+      h += `<div class="g-block${isTa ? " is-ta" : ""}${isConflict ? " is-conflict" : ""}${isTight ? " is-tight" : ""} type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
