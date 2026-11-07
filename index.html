@@ -274,7 +274,11 @@
   .plan-entry { flex-wrap: nowrap; }
   .plan-entry .pr-name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .plan-entry .plan-btn { min-height: 28px; padding: 2px 8px; flex: none; }
+  .plan-row.is-clash { border-left: 3px solid var(--bar-red); padding-left: 6px; }
+  .plan-badge.is-clash { color: var(--ink); border-color: var(--bar-red); }
+  .plan-warn { flex: 1 1 100%; font-size: 0.7rem; color: var(--ink); line-height: 1.25; }
   .g-block.is-ta { outline: 2px dashed var(--on-bar); outline-offset: -4px; }
+  .g-block.is-conflict { outline: 3px solid var(--on-bar); outline-offset: -3px; }
 
   /* --- week view --- */
   .legend {
@@ -1509,12 +1513,14 @@ function renderWeek(year, range) {
         ? (overlaps(s) > 1 ? `;grid-column:${lane + 1}` : `;grid-column:1 / -1`)
         : "";
       const isTa = s.course.planRole === "TA";
-      h += `<div class="g-block${isTa ? " is-ta" : ""} type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
+      const isConflict = Boolean(s.course.hasConflict);
+      h += `<div class="g-block${isTa ? " is-ta" : ""}${isConflict ? " is-conflict" : ""} type-${type} subject-${esc(s.course.color)}" style="grid-row:${localRow} / span ${span}${laneStyle}">` +
         `<span class="gb-time">${esc(s.start)}–${esc(s.end)}</span>` +
         `<span class="gb-name">${esc(s.course.name)}</span>` +
         (s.room ? `<span class="gb-room">${esc(s.room)}</span>` : "") +
         (type !== "lecture" ? `<span class="gb-tag">${typeLabel(type)}</span>` : "") +
         (isTa ? `<span class="gb-tag">TA</span>` : "") +
+        (isConflict ? `<span class="gb-tag">Conflict</span>` : "") +
         `</div>`;
     });
     h += "</div>";
@@ -1713,8 +1719,8 @@ function planCourses(termId) {
   return out;
 }
 
-function planConflicts(courses) {
-  const hits = [];
+function planConflictDetails(courses) {
+  const out = [];
   for (let i = 0; i < courses.length; i++) {
     for (let j = i + 1; j < courses.length; j++) {
       const a = courses[i], b = courses[j];
@@ -1722,7 +1728,8 @@ function planConflicts(courses) {
         for (const t of b.sessions) {
           if (s.day !== t.day) continue;
           if (toMin(s.start) < toMin(t.end) && toMin(t.start) < toMin(s.end)) {
-            hits.push(`${a.name} ↔ ${b.name} · ${s.day} ${s.start}–${s.end}`);
+            out.push({ kind: "time", a, b, day: s.day, start: s.start, end: s.end,
+              label: `${a.name} ↔ ${b.name} · ${s.day} ${s.start}–${s.end}` });
           }
         }
       }
@@ -1731,11 +1738,41 @@ function planConflicts(courses) {
         const day = a.exams[kind];
         if (!day || day !== b.exams[kind]) continue;
         if (a.exams.time && b.exams.time && a.exams.time !== b.exams.time) continue;
-        hits.push(`${a.name} ↔ ${b.name} · ${kind} exam ${fmtDate(day)}`);
+        out.push({ kind: "exam", a, b, examKind: kind, date: day,
+          label: `${a.name} ↔ ${b.name} · ${kind} exam ${fmtDate(day)}` });
       }
     }
   }
-  return [...new Set(hits)];
+  return out;
+}
+
+function planConflicts(courses) {
+  return [...new Set(planConflictDetails(courses).map((d) => d.label))];
+}
+
+function courseWarnings(course, planList) {
+  const warnings = [];
+  const seen = new Set();
+  for (const other of planList) {
+    for (const s of course.sessions) {
+      for (const t of other.sessions) {
+        if (s.day !== t.day) continue;
+        if (!(toMin(s.start) < toMin(t.end) && toMin(t.start) < toMin(s.end))) continue;
+        const key = `${other.key}|${s.day}|${s.start}|${s.end}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        warnings.push(`${s.day} ${s.start}–${s.end} with ${other.name}`);
+      }
+    }
+    for (const kind of ["mid", "final"]) {
+      if (course.planRole === "TA" || other.planRole === "TA") break;
+      const day = course.exams && course.exams[kind];
+      if (!day || !other.exams || day !== other.exams[kind]) continue;
+      if (course.exams.time && other.exams.time && course.exams.time !== other.exams.time) continue;
+      warnings.push(`${kind} exam ${fmtDate(day)} with ${other.name}`);
+    }
+  }
+  return [...new Set(warnings)];
 }
 
 function planTimeRange(courses) {
@@ -1788,7 +1825,14 @@ function renderPlanPanel(termId) {
   const term = TERMS.find((t) => t.id === termId);
   if (!term) return "";
   const courses = planCourses(termId);
-  const clashes = planConflicts(courses);
+  const details = planConflictDetails(courses);
+  const conflictKeys = new Set();
+  for (const d of details) {
+    conflictKeys.add(d.a.key);
+    conflictKeys.add(d.b.key);
+  }
+  for (const c of courses) c.hasConflict = conflictKeys.has(c.key);
+  const clashes = [...new Set(details.map((d) => d.label))];
   const inPlan = new Set(courses.map((c) => c.code));
   const gened = GENED[termId] || { status: "idle", courses: [] };
   const unresolved = gened.status === "ready"
@@ -1846,15 +1890,23 @@ function renderPlanPanel(termId) {
   const optionHtml = groups.map((group) =>
     `<div class="plan-group" data-group="${esc(group.key)}"><h4>${esc(group.label)}</h4><ul class="plan-list">` +
       sortPlanOptions(group.items, planFilter.sort).map(({ course: c, key, badge }) => {
-        const search = [c.name, c.code, badge, c.section || "", ...c.lecturers].join(" ").toLowerCase();
+        const warns = courseWarnings(c, courses);
+        const search = [c.name, c.code, badge, c.section || "", ...c.lecturers,
+          warns.length ? "conflict " + warns.join(" ") : ""].join(" ").toLowerCase();
         const times = c.sessions.map((s) => `${s.day} ${s.start}–${s.end}`).join(", ");
         const meta = `${c.code}${c.section ? " · Sec " + c.section : ""} · ${times}`;
         const label = c.section ? `${c.name} section ${c.section}` : c.name;
-        return `<li class="plan-row" data-search="${esc(search)}">` +
+        return `<li class="plan-row${warns.length ? " is-clash" : ""}" data-search="${esc(search)}">` +
           `<span class="plan-badge">${esc(badge)}</span>` +
+          (warns.length ? `<span class="plan-badge is-clash">Clash</span>` : "") +
           `<span class="pr-name">${esc(c.name)}<span class="pr-meta"> · ${esc(meta)}</span></span>` +
+          (warns.length
+            ? `<span class="plan-warn" title="${esc(warns.join(" · "))}">` +
+              `<span aria-hidden="true">⚠ </span>${esc(warns[0])}` +
+              `${warns.length > 1 ? ` (+${warns.length - 1} more)` : ""}</span>`
+            : "") +
           `<button type="button" class="plan-btn" data-plan-add="${esc(key)}" data-focus="add-${esc(key)}"` +
-            ` aria-label="Add ${esc(label)} to plan">Add</button>` +
+            ` aria-label="Add ${esc(label)} to plan${warns.length ? ", conflicts with the current plan" : ""}">Add</button>` +
         `</li>`;
       }).join("") +
     `</ul></div>`
