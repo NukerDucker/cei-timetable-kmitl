@@ -2,6 +2,7 @@
   import { courseCategory, courseCategoryLabel, courseColorToken } from '../../../domain/categories'
   import type { TimeRange } from '../../../domain/filters'
   import { DAYS, DAY_START, SLOT, SLOTS, WEEKDAYS, fmtTime, minutes } from '../../../domain/time'
+  import Badge from '$lib/components/ui/badge/badge.svelte'
   import type { Category, Course, Day, Session } from '../../../domain/types'
 
   interface Props {
@@ -188,19 +189,23 @@
           >
             <span class="gb-time">{block.session.start}–{block.session.end}</span>
             <span class="gb-name">{block.course.name}</span>
-            {#if block.session.room}
-              <span class="gb-room">{block.session.room}</span>
-            {/if}
-            <span class="gb-tag">{block.tag}</span>
-            {#if block.session.type === 'lab'}
-              <span class="gb-tag">Lab</span>
-            {/if}
-            {#if block.isTa}
-              <span class="gb-tag">TA</span>
-            {/if}
-            {#if block.isConflict}
-              <span class="gb-tag">Conflict</span>
-            {/if}
+            <div class="gb-badges">
+              {#if block.session.room}
+                <Badge variant="block" class="gb-room normal-case font-medium tracking-normal">
+                  {block.session.room}
+                </Badge>
+              {/if}
+              <Badge variant="block" class="uppercase tracking-[0.04em]">{block.tag}</Badge>
+              {#if block.session.type === 'lab'}
+                <Badge variant="block" class="uppercase tracking-[0.04em]">Lab</Badge>
+              {/if}
+              {#if block.isTa}
+                <Badge variant="block" class="uppercase tracking-[0.04em]">TA</Badge>
+              {/if}
+              {#if block.isConflict}
+                <Badge variant="block" class="uppercase tracking-[0.04em]">Conflict</Badge>
+              {/if}
+            </div>
           </div>
         {/each}
       </div>
@@ -337,19 +342,11 @@
     line-height: 1.15;
   }
 
-  .gb-room {
-    font-size: 0.72rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .gb-tag {
-    align-self: flex-start;
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .gb-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: auto;
   }
 
   .block.is-tight {
@@ -366,8 +363,7 @@
     -webkit-line-clamp: 1;
   }
 
-  .block.is-tight .gb-room,
-  .block.is-tight .gb-tag {
+  .block.is-tight .gb-badges {
     display: none;
   }
   @media (max-width: 640px) {
@@ -425,8 +421,12 @@
       padding: 8px 10px;
     }
 
-    .block.is-tight .gb-tag {
-      display: inline;
+    .block.is-tight .gb-badges {
+      display: flex;
+    }
+
+    .gb-badges {
+      margin-top: 0;
     }
 
     .gb-time {
@@ -441,12 +441,8 @@
       text-overflow: ellipsis;
     }
 
-    .gb-room {
-      margin-left: auto;
-    }
-
-    .gb-tag {
-      flex: 0 0 auto;
+    .gb-badges {
+      flex: 0 1 auto;
     }
   }
 </style>
