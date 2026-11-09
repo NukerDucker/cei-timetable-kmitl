@@ -2,6 +2,7 @@
   import { courseCategory, courseCategoryLabel, courseColorToken } from '../../../domain/categories'
   import type { TimeRange } from '../../../domain/filters'
   import { DAYS, DAY_START, SLOT, SLOTS, WEEKDAYS, fmtTime, minutes } from '../../../domain/time'
+  import { MapPin, Tag, User } from 'lucide-svelte'
   import Badge from '$lib/components/ui/badge/badge.svelte'
   import type { Category, Course, Day, Session } from '../../../domain/types'
 
@@ -193,23 +194,33 @@
           >
             <span class="gb-time">{block.session.start}–{block.session.end}</span>
             <span class="gb-name">{block.course.name}</span>
-            <div class="gb-badges">
-              {#if block.session.room}
-                <Badge variant="room" class="gb-room normal-case font-medium tracking-normal">
-                  {block.session.room}
-                </Badge>
-              {/if}
-              <Badge variant="tag" class="uppercase tracking-[0.04em]">{block.tag}</Badge>
+            <div class="gb-tags">
+              <span class="gb-category">
+                <Tag class="size-3 shrink-0" aria-hidden="true" />
+                {block.tag}
+              </span>
               {#if block.session.type === 'lab'}
-                <Badge variant="lab" class="uppercase tracking-[0.04em]">Lab</Badge>
+                <Badge variant="lab">Lab</Badge>
               {/if}
               {#if block.isTa}
-                <Badge variant="ta" class="uppercase tracking-[0.04em]">TA</Badge>
+                <Badge variant="ta">TA</Badge>
               {/if}
               {#if block.isConflict}
-                <Badge variant="conflict" class="uppercase tracking-[0.04em]">Conflict</Badge>
+                <Badge variant="conflict">Conflict</Badge>
               {/if}
             </div>
+            {#if block.session.room}
+              <span class="gb-location">
+                <MapPin class="size-3 shrink-0" aria-hidden="true" />
+                <span class="gb-location-text">{block.session.room}</span>
+              </span>
+            {/if}
+            {#each block.course.lecturers as lecturer, lecturerIndex (lecturerIndex)}
+              <span class="gb-owner" title={lecturer}>
+                <User class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+                <span class="gb-owner-text">{lecturer}</span>
+              </span>
+            {/each}
           </div>
         {/each}
       </div>
@@ -219,7 +230,7 @@
 
 <style>
   .week-grid {
-    --week-row-h: clamp(14px, calc((100dvh - 380px) / 26), 30px);
+    --week-row-h: clamp(0.875em, calc((100dvh - 23.75em) / 26), 1.875em);
     display: grid;
     min-width: 720px;
     border-right: 1px solid var(--border);
@@ -230,10 +241,10 @@
   .day-head {
     display: flex;
     align-items: center;
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--muted-foreground);
   }
 
@@ -257,7 +268,7 @@
   .time {
     grid-column: 1;
     padding-right: 0.5rem;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--muted-foreground);
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -273,7 +284,7 @@
     display: grid;
     grid-template-rows: subgrid;
     grid-template-columns: minmax(0, 1fr);
-    border-left: 1px dashed var(--border);
+    border-left: 1px solid var(--border);
     background-image: linear-gradient(to bottom, var(--border) 1px, transparent 1px);
     background-size: 100% calc(var(--week-row-h) * 2);
   }
@@ -289,11 +300,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 1px dashed var(--border);
-    border-bottom: 1px dashed var(--border);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--muted-foreground);
   }
 
@@ -302,11 +313,11 @@
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin: 2px;
-    padding: 6px 8px;
+    gap: 0.1875rem;
+    margin: 0 0.0625rem 0.0625rem 0;
+    padding: 0.375rem 0.625rem;
     overflow: hidden;
-    border-radius: calc(var(--radius) - 4px);
+    border-radius: 0.25rem;
     color: var(--primary-foreground);
     background: var(--block-color, var(--cat-core));
   }
@@ -326,7 +337,7 @@
   }
 
   .gb-time {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -346,16 +357,53 @@
     line-height: 1.15;
   }
 
-  .gb-badges {
+  .gb-tags {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 2px;
+    align-items: center;
+    gap: 0.125rem 0.25rem;
     margin-top: 0;
   }
 
+  .gb-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .gb-location,
+  .gb-owner {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.25rem;
+    overflow: hidden;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0.9;
+  }
+
+  .gb-location-text,
+  .gb-owner-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .gb-owner {
+    align-items: flex-start;
+  }
+
   .block.is-tight {
-    padding: 3px 6px;
+    padding: 0.25rem 0.5rem;
     gap: 0;
   }
 
@@ -364,11 +412,16 @@
   }
 
   .block.is-tight .gb-name {
-    line-clamp: 1;
-    -webkit-line-clamp: 1;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
   }
 
-  .block.is-tight .gb-badges {
+  .block.is-tight .gb-tags {
+    display: none;
+  }
+
+  .block.is-tight .gb-location,
+  .block.is-tight .gb-owner {
     display: none;
   }
   .week-scroll.fill {
@@ -407,26 +460,26 @@
     .day-grid {
       display: flex;
       flex-direction: column;
-      gap: 1px;
+      gap: 0.0625rem;
       grid-row: auto;
       grid-column: auto;
       border-left: 0;
       background-image: none;
-      padding: 4px 0 8px;
+      padding: 0.25rem 0 0.5rem;
     }
 
     .day-grid::before {
       content: attr(data-day);
       font-size: 0.8125rem;
       font-weight: 600;
-      padding: 2px 0 4px;
+      padding: 0.125rem 0 0.25rem;
     }
 
     .day-grid.is-empty::after {
       content: 'No classes';
       font-size: 0.8125rem;
       color: var(--muted-foreground);
-      padding: 2px 0 8px;
+      padding: 0.125rem 0 0.5rem;
     }
 
     .block {
@@ -435,34 +488,36 @@
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: 4px 8px;
+      gap: 0.25rem 0.5rem;
       min-height: 44px;
-      margin: 0 0 1px;
-      padding: 8px 10px;
+      margin: 0 0 0.0625rem;
+      padding: 0.5rem 0.625rem;
     }
 
-    .block.is-tight .gb-badges {
+    .block.is-tight .gb-tags,
+    .block.is-tight .gb-location,
+    .block.is-tight .gb-owner {
       display: flex;
     }
 
-    .gb-badges {
-      margin-top: 0;
+    .gb-tags {
+      flex: 0 1 auto;
     }
-
     .gb-time {
-      flex: 0 0 86px;
+      flex: 0 0 5.375rem;
     }
 
     .gb-name {
-      flex: 1 1 120px;
+      flex: 1 1 7.5rem;
+      min-width: 0;
       display: block;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .gb-badges {
-      flex: 0 1 auto;
+    .gb-owner {
+      flex: 1 1 100%;
     }
   }
 </style>

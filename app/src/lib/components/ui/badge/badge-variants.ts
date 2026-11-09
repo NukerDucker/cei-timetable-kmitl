@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
 export const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2 py-0.5 text-[0.68rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+  'inline-flex items-center whitespace-nowrap rounded-full border px-1.5 py-0.5 text-eyebrow font-medium leading-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
   {
     variants: {
       variant: {
@@ -9,12 +9,12 @@ export const badgeVariants = cva(
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
         destructive: 'border-transparent bg-destructive text-destructive-foreground',
         outline: 'text-foreground',
-        block: 'border-transparent bg-black/20 text-current',
-        room: 'border-transparent bg-black/25 text-current',
-        tag: 'border-transparent bg-white/25 text-black',
-        lab: 'border-white/60 bg-transparent text-current',
-        ta: 'border-transparent bg-primary text-primary-foreground',
-        conflict: 'border-transparent bg-destructive text-destructive-foreground',
+        block: 'border-transparent bg-black/20',
+        room: 'border-transparent bg-transparent px-0 py-0',
+        tag: 'border-transparent bg-black/20',
+        lab: 'border-white/35 bg-transparent',
+        ta: 'border-transparent bg-black/20',
+        conflict: 'border-transparent bg-black/20',
       },
     },
     defaultVariants: { variant: 'default' },

@@ -1,1 +1,7 @@
 CLAUDE.md
+DESIGN.md.hand-edited
+.fablize/
+opendesigner/review-before/
+opendesigner/review/*
+!opendesigner/review/AUDIT.md
+!opendesigner/review/REPORT.md

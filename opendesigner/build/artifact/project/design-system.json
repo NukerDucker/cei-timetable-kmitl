@@ -1,0 +1,25 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-09T13:55:00Z"
+ },
+ "title": "CEI Schedule",
+ "namespace": "CeiSchedule",
+ "libraries": [],
+ "sections": {},
+ "groups": [],
+ "assetGroups": {},
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "OpenDesigner",
+  "at": "2026-11-09T14:58:39Z",
+  "via": "engine.py export --format artifact",
+  "note": "Rebuilt from the system's tokens"
+ }
+}

@@ -19,9 +19,9 @@
   .legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 16px;
-    margin: 0 0 8px;
-    font-size: 0.7rem;
+    gap: 0.25rem 1rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
     color: var(--muted-foreground);
   }
 
@@ -35,10 +35,10 @@
     flex: none;
     width: 9px;
     height: 9px;
-    margin-right: 5px;
-    border-radius: 2px;
+    margin-right: 0.25rem;
+    border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+    border-radius: var(--radius-full);
     background: var(--cat-core);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent);
   }
 
   .legend-swatch[data-category='elective'] {

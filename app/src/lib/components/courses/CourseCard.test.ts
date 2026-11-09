@@ -1,4 +1,4 @@
-import { render } from '@testing-library/svelte'
+import { render, screen } from '@testing-library/svelte'
 import { describe, expect, it } from 'vitest'
 import { makeCourse } from '../../../domain/test-utils'
 import CourseCard from './CourseCard.svelte'
@@ -12,10 +12,10 @@ describe('CourseCard', () => {
     const { container } = render(CourseCard, {
       props: { course: makeCourse({ type, name: 'Category Course' }) },
     })
-    expect(container.querySelector('.cc-dot')?.getAttribute('data-category')).toBe(category)
+    expect(container.querySelector('.cc-status-dot')?.getAttribute('data-category')).toBe(category)
   })
 
-  it('lists sessions and the exam line', () => {
+  it('shows time, location, owner and Lab tag', () => {
     const course = makeCourse({
       name: 'Signals',
       code: '01276001',
@@ -28,13 +28,31 @@ describe('CourseCard', () => {
       exams: { mid: '2026-02-10', midRoom: 'EX-1', final: '2026-03-10' },
     })
     const { container } = render(CourseCard, { props: { course } })
-    const text = container.textContent ?? ''
-    expect(text).toContain('Signals')
-    expect(text).toContain('01276001')
-    expect(text).toContain('ECC-101')
-    expect(text).toContain('(Lab)')
-    expect(text).toContain('Ada Lovelace')
-    expect(text).toContain('Mid Tue 10 Feb 2026')
-    expect(text).toContain('Final Tue 10 Mar 2026')
+
+    expect(screen.getByRole('article')).toBeInTheDocument()
+    expect(container.textContent).toContain('Mon 09:00–12:00')
+    expect(container.textContent).toContain('+1')
+    expect(container.textContent).toContain('ECC-101 · ECC-202')
+    expect(container.textContent).toContain('Ada Lovelace')
+    expect(container.querySelector('.cc-avatar')?.textContent).toBe('AL')
+    expect(container.textContent).toContain('Lab')
+    expect(container.textContent).toContain('01276001')
+    expect(container.textContent).toContain('Mid Tue 10 Feb 2026')
+    expect(container.textContent).toContain('Final Tue 10 Mar 2026')
+  })
+
+  it('summarises multiple owners and keeps the full list in a title', () => {
+    const course = makeCourse({ lecturers: ['Ada Lovelace', 'Grace Hopper', 'Katherine Johnson'] })
+    const { container } = render(CourseCard, { props: { course } })
+
+    const owner = container.querySelector('.cc-avatar')?.nextElementSibling
+    expect(owner?.textContent).toBe('Ada Lovelace +2')
+    expect(owner?.getAttribute('title')).toBe('Ada Lovelace · Grace Hopper · Katherine Johnson')
+  })
+
+  it('omits the owner row when there are no lecturers', () => {
+    const course = makeCourse({ lecturers: [] })
+    const { container } = render(CourseCard, { props: { course } })
+    expect(container.querySelector('.cc-avatar')).toBeNull()
   })
 })

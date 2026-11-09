@@ -1,0 +1,316 @@
+{
+ "method": "declared",
+ "source": "app/src",
+ "files": 68,
+ "elements": null,
+ "color": {
+  "accents": [
+   {
+    "hex": "#007aff",
+    "count": 3,
+    "oklch": [
+     0.603,
+     0.218,
+     257
+    ],
+    "sources": {
+     "token": 2,
+     "focus": 1
+    },
+    "score": 1.09
+   },
+   {
+    "hex": "#c94e17",
+    "count": 2,
+    "oklch": [
+     0.581,
+     0.169,
+     41
+    ],
+    "sources": {
+     "token": 2
+    },
+    "score": 0.34
+   }
+  ],
+  "neutrals": [
+   {
+    "hex": "#ffffff",
+    "count": 12,
+    "oklch": [
+     1.0,
+     0.0,
+     90
+    ]
+   },
+   {
+    "hex": "#1c1c1e",
+    "count": 9,
+    "oklch": [
+     0.227,
+     0.004,
+     286
+    ]
+   },
+   {
+    "hex": "#000000",
+    "count": 8,
+    "oklch": [
+     0.0,
+     0.0,
+     0
+    ]
+   },
+   {
+    "hex": "#e5e5ea",
+    "count": 2,
+    "oklch": [
+     0.923,
+     0.007,
+     286
+    ]
+   },
+   {
+    "hex": "#636366",
+    "count": 2,
+    "oklch": [
+     0.501,
+     0.005,
+     286
+    ]
+   },
+   {
+    "hex": "#d1d1d6",
+    "count": 2,
+    "oklch": [
+     0.862,
+     0.007,
+     286
+    ]
+   },
+   {
+    "hex": "#2c2c2e",
+    "count": 2,
+    "oklch": [
+     0.294,
+     0.004,
+     286
+    ]
+   },
+   {
+    "hex": "#e9e6e1",
+    "count": 1,
+    "oklch": [
+     0.926,
+     0.007,
+     81
+    ]
+   }
+  ],
+  "confidence": "high",
+  "count": 3,
+  "basis": "on focus, token; ranked by count x chroma",
+  "borders": {},
+  "note": "the accent hex is the reference's identity, a measurement only: carry its role and chroma level, never the hue as the person's primary",
+  "neutralTint": {
+   "chroma": 0.005,
+   "hue": 286,
+   "count": 2,
+   "confidence": "low"
+  },
+  "accentChroma": 0.218
+ },
+ "type": {
+  "body": {
+   "px": 15.0,
+   "share": 1.0,
+   "count": 1,
+   "confidence": "medium",
+   "basis": "100% of the weighted font-size declarations on body, p and prose selectors"
+  },
+  "scale": {
+   "base": 15.0,
+   "ratio": 1.5,
+   "meanLogResidual": 0.0816,
+   "relativeResidual": 0.201,
+   "reading": "loose fit: keep measured sizes as overrides",
+   "sizes": [
+    10.0,
+    11.0,
+    12.0,
+    13.0,
+    14.0,
+    15.0
+   ]
+  },
+  "families": [],
+  "minorFaces": [],
+  "systemFaces": [
+   "-apple-system"
+  ],
+  "primaryIsSystem": true,
+  "weights": [
+   500,
+   600
+  ]
+ },
+ "bodySize": 15.0,
+ "space": {
+  "unit": 4,
+  "shareDivisible": {
+   "8": 0.26,
+   "5": 0.13,
+   "4": 0.51
+  },
+  "steps": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   10,
+   12,
+   14,
+   16,
+   20
+  ],
+  "count": 39,
+  "confidence": "low"
+ },
+ "radius": {
+  "container": {
+   "px": 16,
+   "count": 1,
+   "share": 1.0,
+   "confidence": "medium",
+   "values": {
+    "16": 1
+   }
+  },
+  "ignored": {
+   "other": 2,
+   "decor": 1
+  },
+  "basis": "controls (buttons, inputs) and containers (cards, dialogs, menus) apart; inline links, badges, decorative pills and images ignored",
+  "control": {
+   "px": 2,
+   "count": 1,
+   "share": 0.5,
+   "confidence": "low",
+   "values": {
+    "16": 1,
+    "2": 1
+   },
+   "note": "no button or input selectors recognised: most common radius on other selectors"
+  },
+  "mostCommon": 2,
+  "roundnessDial": 19
+ },
+ "depth": {
+  "shadows": [
+   "0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 14px 40px 0px rgba(0, 0, 0, 0.08)",
+   "0px 12px 32px 0px rgba(0, 0, 0, 0.14)"
+  ],
+  "hint": "shadow-ladder",
+  "levels": [
+   {
+    "level": "low",
+    "blur": 2.0,
+    "y": 1.0,
+    "alpha": 0.04,
+    "count": 2
+   },
+   {
+    "level": "high",
+    "blur": 32.0,
+    "y": 12.0,
+    "alpha": 0.14,
+    "count": 2
+   },
+   {
+    "level": "overlay",
+    "blur": 40.0,
+    "y": 14.0,
+    "alpha": 0.08,
+    "count": 2
+   }
+  ],
+  "rings": 0,
+  "ignored": {
+   "inset": 2
+  },
+  "count": 4,
+  "confidence": "high",
+  "basis": "4 element(s) with elevation shadows, levels by blur and offset; white or transparent fades, glows, insets and text shadows ignored"
+ },
+ "motion": {
+  "note": "no UI transitions found; do not infer Energy from this source",
+  "count": 0,
+  "confidence": "none"
+ },
+ "summary": {
+  "bodySize": {
+   "value": 15.0,
+   "confidence": "medium",
+   "count": 1,
+   "basis": "100% of the weighted font-size declarations on body, p and prose selectors"
+  },
+  "accent": {
+   "value": {
+    "chroma": 0.218,
+    "usedOn": [
+     "focus",
+     "token"
+    ]
+   },
+   "confidence": "high",
+   "count": 3,
+   "basis": "on focus, token; ranked by count x chroma; the hue is identity and is not carried"
+  },
+  "neutralTint": {
+   "value": {
+    "chroma": 0.005,
+    "hue": 286
+   },
+   "confidence": "low",
+   "count": 2,
+   "basis": "most-used mid-tone neutral"
+  },
+  "radiusControl": {
+   "value": 2,
+   "confidence": "low",
+   "count": 1,
+   "basis": "controls (buttons, inputs) and containers (cards, dialogs, menus) apart; inline links, badges, decorative pills and images ignored"
+  },
+  "radiusContainer": {
+   "value": 16,
+   "confidence": "medium",
+   "count": 1,
+   "basis": "controls (buttons, inputs) and containers (cards, dialogs, menus) apart; inline links, badges, decorative pills and images ignored"
+  },
+  "depth": {
+   "value": "shadow-ladder",
+   "confidence": "high",
+   "count": 4,
+   "basis": "4 element(s) with elevation shadows, levels by blur and offset; white or transparent fades, glows, insets and text shadows ignored"
+  },
+  "spaceUnit": {
+   "value": 4,
+   "confidence": "low",
+   "count": 39,
+   "basis": "share divisible {8: 0.26, 5: 0.13, 4: 0.51}"
+  }
+ },
+ "identity": {
+  "rule": "measurements of the reference's identity, never values to adopt: carry role, chroma level, structure and rhythm; ask for the person's own brand color and typeface",
+  "accentHue": "#007aff",
+  "typefaces": []
+ },
+ "neverInferred": [
+  "brandPresence (always ask)",
+  "intent, audience, principles"
+ ]
+}

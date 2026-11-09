@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Moon, Sun } from 'lucide-svelte'
-  import { cn } from '$lib/utils'
+  import { Segmented } from '$lib/components/ui/segmented'
   import { COHORT_TABS, TERM_TABS } from '../../../state/route.svelte'
   import type { Route, RouteView } from '../../../state/route.svelte'
 
@@ -23,15 +23,6 @@
 
   const THEME_KEY = 'timetable-theme'
   let dark = $state(false)
-
-  function tabClass(active: boolean): string {
-    return cn(
-      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg px-3 text-[0.78rem] font-medium transition-colors sm:min-h-8 sm:px-2.5 sm:text-xs',
-      active
-        ? 'bg-card text-foreground shadow-card'
-        : 'text-muted-foreground hover:text-foreground',
-    )
-  }
 
   function applyTheme(): void {
     if (typeof document === 'undefined') return
@@ -67,47 +58,17 @@
 <nav aria-label="Timetable controls" class="flex items-center gap-2">
   <div class="tab-scroll -mx-1 min-w-0 flex-1 overflow-x-auto px-1 py-1">
     <div class="flex w-max items-center gap-2">
-      <div class="flex shrink-0 gap-0.5 rounded-xl bg-muted p-0.5" role="group" aria-label="Term">
-        {#each TERM_TABS as tab (tab.id)}
-          <button
-            type="button"
-            class={tabClass(route.term === tab.id)}
-            aria-pressed={route.term === tab.id}
-            onclick={() => onchange({ term: tab.id })}
-          >
-            {tab.label}
-          </button>
-        {/each}
-      </div>
+      <Segmented items={TERM_TABS} value={route.term} label="Term" onchange={(term) => onchange({ term })} />
 
-      <div class="flex shrink-0 gap-0.5 rounded-xl bg-muted p-0.5" role="group" aria-label="Year">
-        {#each COHORT_TABS as tab (tab.id)}
-          <button
-            type="button"
-            class={tabClass(route.cohort === tab.id)}
-            aria-pressed={route.cohort === tab.id}
-            onclick={() => onchange({ cohort: tab.id })}
-          >
-            {tab.label}
-          </button>
-        {/each}
-      </div>
+      <Segmented items={COHORT_TABS} value={route.cohort} label="Year" onchange={(cohort) => onchange({ cohort })} />
 
-      <div class="flex shrink-0 gap-0.5 rounded-xl bg-muted p-0.5" role="group" aria-label="View">
-        {#each VIEW_TABS as tab (tab.id)}
-          <button
-            type="button"
-            class={tabClass(route.view === tab.id)}
-            aria-pressed={route.view === tab.id}
-            onclick={() => onchange({ view: tab.id })}
-            onpointerenter={() => onprefetch?.(tab.id)}
-            onfocus={() => onprefetch?.(tab.id)}
-            ontouchstart={() => onprefetch?.(tab.id)}
-          >
-            {tab.label}
-          </button>
-        {/each}
-      </div>
+      <Segmented
+        items={VIEW_TABS}
+        value={route.view}
+        label="View"
+        onchange={(view) => onchange({ view })}
+        onprefetch={onprefetch}
+      />
     </div>
   </div>
 

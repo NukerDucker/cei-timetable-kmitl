@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { EmptyState } from '$lib/components/ui/empty-state'
+  import { Input } from '$lib/components/ui/input'
   import CourseCard from './CourseCard.svelte'
   import type { Course } from '../../../domain/types'
 
@@ -36,9 +38,8 @@
 </script>
 
 <div class="course-tools">
-  <input
+  <Input
     type="search"
-    class="course-search"
     placeholder="Search course, code, lecturer, room"
     aria-label={`Search courses for ${label}`}
     bind:value={query}
@@ -50,7 +51,7 @@
 </div>
 
 {#if filtered.length === 0}
-  <p class="empty" role="status">No courses match that search.</p>
+  <EmptyState>No courses match that search.</EmptyState>
 {:else}
   <div class="course-list">
     {#each filtered as course (course.code)}
@@ -65,25 +66,6 @@
     align-items: center;
     gap: 12px;
     margin: 2px 0 12px;
-  }
-
-  .course-search {
-    flex: 1;
-    min-width: 0;
-    min-height: 44px;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--background);
-    color: var(--foreground);
-    font: inherit;
-    font-size: 0.875rem;
-  }
-
-  @media (min-width: 640px) {
-    .course-search {
-      min-height: 40px;
-    }
   }
 
   .count {
@@ -109,11 +91,5 @@
     .course-list {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-  }
-
-  .empty {
-    padding: 16px 0;
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
   }
 </style>

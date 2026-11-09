@@ -4,6 +4,7 @@
   import ExamTable from './lib/components/exams/ExamTable.svelte'
   import PlanView from './lib/components/plan/PlanView.svelte'
   import ControlBar from './lib/components/shell/ControlBar.svelte'
+  import { Card } from './lib/components/ui/card'
   import Legend from './lib/components/week/Legend.svelte'
   import WeekGrid from './lib/components/week/WeekGrid.svelte'
   import { createGenedState } from './state/gened.svelte'
@@ -49,21 +50,21 @@
 <div class="flex h-dvh flex-col overflow-hidden bg-background text-foreground max-[900px]:h-auto max-[900px]:min-h-dvh max-[900px]:overflow-visible">
   <header class="mx-auto w-full max-w-[1400px] px-3 pt-3 sm:px-4">
     <div class="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
-      <div class="col-span-2 rounded-2xl border bg-card p-4 shadow-card md:col-span-1">
-        <p class="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      <Card class="col-span-2 p-4 md:col-span-1">
+        <p class="text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">
           KMITL · Faculty of Engineering
         </p>
         <h1 class="text-[1.8rem] font-bold leading-tight tracking-[-0.02em] sm:text-[2rem]">
           CEI Schedule
         </h1>
         <p class="mt-0.5 text-xs text-muted-foreground">Computer Engineering · International</p>
-      </div>
-      <div class="rounded-2xl border bg-card p-4 shadow-card">
-        <span class="block text-[0.62rem] font-semibold uppercase tracking-[0.09em] text-muted-foreground">Term</span>
+      </Card>
+      <Card class="p-4">
+        <span class="block text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">Term</span>
         <span class="mt-1 block text-xl font-semibold leading-tight">{term?.label ?? '—'}</span>
-      </div>
-      <div class="min-w-0 rounded-2xl border bg-card p-4 shadow-card">
-        <span class="block text-[0.62rem] font-semibold uppercase tracking-[0.09em] text-muted-foreground">Live sync</span>
+      </Card>
+      <Card class="min-w-0 p-4">
+        <span class="block text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">Live sync</span>
         <span
           class="mt-1 block truncate text-xs text-muted-foreground"
           role="status"
@@ -73,27 +74,27 @@
         >
           {state.statusText}
         </span>
-      </div>
+      </Card>
     </div>
   </header>
 
   <div class="mx-auto flex min-h-0 w-full max-w-[1400px] flex-1 flex-col gap-3 px-3 pb-3 pt-3 sm:px-4">
-    <div class="rounded-2xl border bg-card p-2 shadow-card">
+    <Card class="p-2">
       <ControlBar
         route={route.current}
         onchange={(patch) => route.set(patch)}
         onprefetch={prefetch}
       />
-    </div>
+    </Card>
 
 
     <main class="flex min-h-0 flex-1 flex-col">
       {#if !term}
-        <section class="rounded-2xl bg-card p-4 shadow-card">
+        <Card as="section" variant="borderless" class="p-4">
           <p class="text-sm text-muted-foreground">This timetable is unavailable.</p>
-        </section>
+        </Card>
       {:else if route.current.view === 'plan'}
-        <section class="flex min-h-0 flex-col overflow-hidden rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={planLabel}>
+        <Card as="section" variant="borderless" class="flex min-h-0 flex-col overflow-hidden p-3 sm:p-4" aria-label={planLabel}>
           <PlanView
             terms={state.terms}
             termId={route.current.term}
@@ -102,15 +103,15 @@
             gened={gened}
             onCohortChange={(next) => route.set({ cohort: next })}
           />
-        </section>
+        </Card>
       {:else if !cohort}
-        <section class="rounded-2xl bg-card p-4 shadow-card">
+        <Card as="section" variant="borderless" class="p-4">
           <p class="text-sm text-muted-foreground">
             No {COHORT_LABELS[route.current.cohort].toLowerCase()} timetable published for {term.label}.
           </p>
-        </section>
+        </Card>
       {:else}
-        <section class="min-h-0 overflow-y-auto rounded-2xl bg-card p-3 shadow-card sm:p-4" aria-label={panelLabel}>
+        <Card as="section" variant="borderless" class="min-h-0 overflow-y-auto p-3 sm:p-4" aria-label={panelLabel}>
           {#if route.current.view === 'week'}
             <Legend />
             <WeekGrid courses={cohort.courses} />
@@ -132,7 +133,7 @@
               </ul>
             </details>
           {/if}
-        </section>
+        </Card>
       {/if}
     </main>
   </div>
