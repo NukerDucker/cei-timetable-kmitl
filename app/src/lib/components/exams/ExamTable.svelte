@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { examTime } from '../../../domain/exams'
   import { fmtDate } from '../../../domain/time'
   import type { Course } from '../../../domain/types'
 
@@ -22,17 +23,25 @@
 
   const rows = $derived(
     [...courses].sort((a, b) => {
-      const primary = primaryKey(a) - primaryKey(b)
-      if (primary !== 0) return primary
-      const mid = dateValue(a.exams.mid) - dateValue(b.exams.mid)
-      if (mid !== 0) return mid
+      const primaryA = primaryKey(a)
+      const primaryB = primaryKey(b)
+      if (primaryA !== primaryB) return primaryA < primaryB ? -1 : 1
+      const midA = dateValue(a.exams.mid)
+      const midB = dateValue(b.exams.mid)
+      if (midA !== midB) return midA < midB ? -1 : 1
       return a.name.localeCompare(b.name)
     }),
   )
 
-  function examTime(course: Course): string {
+  function displayTime(course: Course): string {
+    const mid = examTime(course.exams, 'mid')
+    const final = examTime(course.exams, 'final')
+    if (mid && final) return mid === final ? mid : `Mid ${mid} · Final ${final}`
+    const parts: string[] = []
+    if (course.exams.mid) parts.push(mid ? `Mid ${mid}` : 'Mid time TBA')
+    if (course.exams.final) parts.push(final ? `Final ${final}` : 'Final time TBA')
+    if (parts.length) return parts.join(' · ')
     return (
-      course.exams.time ||
       course.exams.midNote ||
       course.exams.finalNote ||
       'Not set'
@@ -75,7 +84,7 @@
               <span class="note">{course.exams.finalNote || 'By instructor'}</span>
             {/if}
           </td>
-          <td data-label="Time">{examTime(course)}</td>
+          <td data-label="Time">{displayTime(course)}</td>
         </tr>
       {/each}
     </tbody>

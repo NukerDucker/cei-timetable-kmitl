@@ -169,6 +169,8 @@ describe('PlanView', () => {
       { term: 't1', sectionId: 't1/A101/901', role: 'take', cohort: 'y1' },
     ])
     expect(entriesRegion()).toHaveTextContent('Zulu Circuits')
+    expect(container.querySelector('header')).toHaveTextContent('3 / 22 credits')
+    expect(screen.queryByText('Credit overflow')).toBeNull()
     expect(screen.getByRole('status')).toHaveTextContent(
       'Plan updated: 1 course, 0 conflicts.',
     )
@@ -179,7 +181,8 @@ describe('PlanView', () => {
     expect(written.entries).toEqual(plan.entries)
 
     await tick()
-    expect(screen.getByRole('searchbox')).toHaveFocus()
+    const nextAdd = screen.getAllByRole('button', { name: /^Add / })[0]
+    expect(nextAdd).toHaveFocus()
 
     const entry = container.querySelector('[data-plan-entry="t1/A101/901"]')
     if (!(entry instanceof HTMLElement)) throw new Error('Missing plan entry')
@@ -198,6 +201,7 @@ describe('PlanView', () => {
     await addOption(container, 't1/L103/901')
     await addOption(container, 't1/O105/901')
     expect(container.querySelector('header')).toHaveTextContent('1 conflict')
+    expect(container.querySelector('header')).toHaveTextContent('7 / 22 credits')
 
     const entry = container.querySelector('[data-plan-entry="t1/L103/901"]')
     if (!(entry instanceof HTMLElement)) throw new Error('Missing lab entry')
@@ -207,6 +211,7 @@ describe('PlanView', () => {
     expect(plan.entries.find((item) => item.sectionId === 't1/L103/901')?.role).toBe('ta')
     expect(ta).toHaveAttribute('aria-pressed', 'true')
     expect(container.querySelector('header')).toHaveTextContent('0 conflicts')
+    expect(container.querySelector('header')).toHaveTextContent('3 / 22 credits')
 
     const blocks = Array.from(container.querySelectorAll('.block'))
     const labBlock = blocks.find((block) => block.textContent?.includes('Lab Systems'))
@@ -226,17 +231,20 @@ describe('PlanView', () => {
 
     await addOption(container, 't1/A101/901')
     const clashing = rowFor(container, 't1/C104/901')
-    expect(clashing).toHaveTextContent('Mon 10:00–12:00 with Zulu Circuits')
+    expect(clashing).toHaveTextContent('Conflicts: Mon 10:00–12:00 with Zulu Circuits')
     expect(clashing.querySelector('svg')).not.toBeNull()
     expect(clashing.className).toContain('border-l-destructive')
 
     await fireEvent.click(within(clashing).getByRole('button', { name: /^Add / }))
 
     expect(container.querySelector('header')).toHaveTextContent('1 conflict')
-    expect(container.querySelector('header [title]')).toHaveAttribute(
-      'title',
-      'Zulu Circuits ↔ Clash Course · Mon 09:00–11:00',
+    const conflictButton = within(container.querySelector('header') as HTMLElement).getByRole(
+      'button',
+      { name: '1 conflict' },
     )
+    await fireEvent.click(conflictButton)
+    expect(conflictButton).toHaveAttribute('aria-expanded', 'true')
+    expect(container).toHaveTextContent('Zulu Circuits ↔ Clash Course · Mon 09:00–11:00')
     expect(container.querySelectorAll('.block.is-conflict')).toHaveLength(2)
     expect(screen.getAllByText('Conflict')).toHaveLength(2)
   })
@@ -244,6 +252,7 @@ describe('PlanView', () => {
   it('applies search, day, credits, hide-conflicting, and per-group sorting', async () => {
     const { container } = setup()
     const search = screen.getByRole('searchbox')
+    await fireEvent.click(screen.getByRole('button', { name: /^Filters/ }))
 
     expect(firstYearKeys(container)).toEqual([
       't1/B102/901',
@@ -288,6 +297,7 @@ describe('PlanView', () => {
     await addOption(container, 't1/A101/901')
 
     expect(rowFor(container, 't1/C104/901')).toBeInTheDocument()
+    await fireEvent.click(screen.getByRole('button', { name: /^Filters/ }))
     await fireEvent.click(screen.getByLabelText('Hide conflicting'))
 
     expect(container.querySelector('[data-plan-option="t1/C104/901"]')).toBeNull()

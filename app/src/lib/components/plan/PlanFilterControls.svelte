@@ -2,17 +2,20 @@
   import { filterActive } from '../../../domain/filters'
   import type { PlanFilter, SortKey } from '../../../domain/filters'
   import { DAY_ORDER } from '../../../domain/time'
-  import type { Day } from '../../../domain/types'
+  import type { CohortId, Day } from '../../../domain/types'
+  import { COHORT_TABS } from '../../../state/route.svelte'
   import Button from '../ui/button/button.svelte'
 
   interface Props {
     filter: PlanFilter
     creditValues: number[]
+    cohort: CohortId
     onchange: (patch: Partial<PlanFilter>, focus: HTMLElement | null) => void
     onclear: () => void
+    onCohortChange: (cohort: CohortId) => void
   }
 
-  let { filter, creditValues, onchange, onclear }: Props = $props()
+  let { filter, creditValues, cohort, onchange, onclear, onCohortChange }: Props = $props()
 
   const SORT_OPTIONS: readonly { value: SortKey; label: string }[] = [
     { value: 'name', label: 'Name' },
@@ -32,9 +35,23 @@
 <div class="space-y-2">
   <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
     <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span>Year</span>
+      <select
+        class="min-h-11 rounded-md border border-control-border bg-card px-2 text-xs text-foreground min-[901px]:min-h-8"
+        aria-label="Plan year"
+        value={cohort}
+        onchange={(event) => onCohortChange(event.currentTarget.value as CohortId)}
+      >
+        {#each COHORT_TABS as tab (tab.id)}
+          <option value={tab.id} selected={cohort === tab.id}>{tab.label}</option>
+        {/each}
+      </select>
+    </label>
+
+    <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span>Sort</span>
       <select
-        class="min-h-11 rounded-md border bg-card px-2 text-xs text-foreground min-[901px]:min-h-8"
+        class="min-h-11 rounded-md border border-control-border bg-card px-2 text-xs text-foreground min-[901px]:min-h-8"
         aria-label="Sort plan courses"
         value={filter.sort}
         onchange={(event) => onchange({ sort: event.currentTarget.value as SortKey }, event.currentTarget)}
@@ -48,7 +65,7 @@
     <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span>Credits</span>
       <select
-        class="min-h-11 rounded-md border bg-card px-2 text-xs text-foreground min-[901px]:min-h-8"
+        class="min-h-11 rounded-md border border-control-border bg-card px-2 text-xs text-foreground min-[901px]:min-h-8"
         aria-label="Credits"
         value={filter.credit}
         onchange={(event) => onchange({ credit: event.currentTarget.value }, event.currentTarget)}

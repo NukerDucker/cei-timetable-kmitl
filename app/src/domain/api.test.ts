@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   CACHE_KEY,
   curatedTerms,
+  examPatch,
   flattenRows,
   loadTerms,
+  normalizeStoredCourse,
   readTermCache,
   schedulable,
   sessionsFromRows,
@@ -179,5 +181,78 @@ describe('term cache', () => {
     expect(result.updated).toBe(0)
     expect(result.terms).toHaveLength(2)
     expect(result.terms[0]?.years[0]?.courses.length).toBeGreaterThan(0)
+  })
+})
+
+describe('cache identity and time validation', () => {
+  it('preserves the other exam kind when only the final updates', () => {
+    const patched = examPatch(
+      [
+        row({
+          midterm_start_date_time: '',
+          final_start_date_time: '2026-10-01 13:00:00',
+          final_end_date_time: '2026-10-01 16:00:00',
+        }),
+      ],
+      { mid: '2026-09-20', time: '09:00–12:00' },
+    )
+    expect(patched.midTime).toBe('09:00–12:00')
+    expect(patched.finalTime).toBe('13:00–16:00')
+  })
+
+  it('does not leak a final time into a midterm with no known time', () => {
+    const patched = examPatch(
+      [
+        row({
+          midterm_start_date_time: '',
+          final_start_date_time: '2026-10-01 13:00:00',
+          final_end_date_time: '2026-10-01 16:00:00',
+        }),
+      ],
+      { mid: '2026-09-20' },
+    )
+    expect(patched.midTime).toBeNull()
+    expect(patched.finalTime).toBe('13:00–16:00')
+  })
+
+  it('rejects duplicate or unknown term ids', () => {
+    const duplicate = memoryStorage({
+      [CACHE_KEY]: JSON.stringify({
+        v: 3,
+        savedAt: 10,
+        terms: [
+          { id: 't1', label: '1/2569', years: [] },
+          { id: 't1', label: 'dup', years: [] },
+        ],
+      }),
+    })
+    expect(readTermCache(duplicate)).toBeNull()
+    const unknown = memoryStorage({
+      [CACHE_KEY]: JSON.stringify({
+        v: 3,
+        savedAt: 10,
+        terms: [
+          { id: 't1', label: '1/2569', years: [] },
+          { id: 't9', label: 'unknown', years: [] },
+        ],
+      }),
+    })
+    expect(readTermCache(unknown)).toBeNull()
+  })
+
+  it('drops sessions with malformed or backwards times', () => {
+    const course = normalizeStoredCourse(
+      {
+        name: 'Broken',
+        code: '01276999',
+        sessions: [
+          { day: 'Mon', start: '9:00', end: '12:00', room: null, section: '901' },
+          { day: 'Tue', start: '12:00', end: '09:00', room: null, section: '901' },
+          { day: 'Wed', start: '09:00', end: '12:00', room: null, section: '901' },
+        ],
+      },
+      't1',
+    )
+    expect(course?.sessions.map((session) => session.day)).toEqual(['Wed'])
   })
 })

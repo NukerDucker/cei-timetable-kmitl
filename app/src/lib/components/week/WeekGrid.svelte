@@ -2,6 +2,7 @@
   import { courseCategory, courseCategoryLabel, courseColorToken } from '../../../domain/categories'
   import type { TimeRange } from '../../../domain/filters'
   import { DAYS, DAY_START, SLOT, SLOTS, WEEKDAYS, fmtTime, minutes } from '../../../domain/time'
+  import { placeDaySessions } from '../../../domain/weekLayout'
   import { MapPin, Tag, User } from 'lucide-svelte'
   import Badge from '$lib/components/ui/badge/badge.svelte'
   import type { Category, Course, Day, Session } from '../../../domain/types'
@@ -47,8 +48,7 @@
   const conflictSet = $derived(new Set(conflictKeys))
 
   function planKey(course: Course): string | null {
-    const key = (course as { key?: unknown }).key
-    return typeof key === 'string' ? key : null
+    return 'key' in course && typeof course.key === 'string' ? course.key : null
   }
 
   const TIME_LABELS = $derived(
@@ -68,41 +68,20 @@
   const activeToday = $derived(today === undefined ? currentWeekday() : today)
 
   function buildDay(day: Day, source: Course[], window: TimeRange): DayColumn {
-    const items: { course: Course; session: Session; order: number }[] = []
-    for (const course of source) {
-      course.sessions.forEach((session, order) => {
-        if (session.day === day) items.push({ course, session, order })
-      })
-    }
-    items.sort((a, b) => minutes(a.session.start) - minutes(b.session.start))
-
-    const laneEnds: number[] = []
-    const placed = items.map((item) => {
+    const { items: placed, laneCount } = placeDaySessions(source, day)
+    const blocks = placed.map((item) => {
       const start = minutes(item.session.start)
       const end = minutes(item.session.end)
-      let lane = laneEnds.findIndex((laneEnd) => laneEnd <= start)
-      if (lane === -1) {
-        lane = laneEnds.length
-        laneEnds.push(0)
-      }
-      laneEnds[lane] = end
-      return { ...item, lane, start, end }
-    })
-
-    const blocks = placed.map((item) => {
-      const overlaps = placed.filter(
-        (other) => other.start < item.end && item.start < other.end,
-      ).length
-      const snapped = window.start + Math.floor((item.start - window.start) / SLOT) * SLOT
+      const snapped = window.start + Math.floor((start - window.start) / SLOT) * SLOT
       const row = (snapped - window.start) / SLOT + 1
-      const span = Math.max(1, Math.round((item.end - snapped) / SLOT))
+      const span = Math.max(1, Math.round((end - snapped) / SLOT))
       const key = planKey(item.course)
       return {
         key: `${item.course.code}/${day}/${item.session.start}/${item.session.section}/${item.order}`,
         course: item.course,
         session: item.session,
         lane: item.lane,
-        overlaps,
+        overlaps: item.overlaps,
         row,
         span,
         category: courseCategory(item.course),
@@ -112,7 +91,7 @@
       } satisfies WeekBlock
     })
 
-    return { day, blocks, laneCount: laneEnds.length }
+    return { day, blocks, laneCount }
   }
 
   const week = $derived.by(() => {
@@ -134,7 +113,7 @@
     return styles.join('; ')
   }
 
-  function blockStyle(block: WeekBlock, laneCount: number, start: number): string {
+  function blockStyle(block: WeekBlock, laneCount: number): string {
     const styles = [`grid-row: ${block.row} / span ${block.span}`]
     if (laneCount > 1) {
       styles.push(
@@ -189,7 +168,7 @@
             class:is-ta={block.isTa}
             class:is-conflict={block.isConflict}
             data-category={block.category}
-            style={`${blockStyle(block, column.laneCount, activeRange.start)}; --block-color: var(--${courseColorToken(block.course)})`}
+            style={`${blockStyle(block, column.laneCount)}; --block-color: var(--${courseColorToken(block.course)})`}
             title={`${block.course.name} · ${block.session.start}–${block.session.end}`}
           >
             <span class="gb-time">{block.session.start}–{block.session.end}</span>
@@ -206,7 +185,7 @@
                 <Badge variant="ta">TA</Badge>
               {/if}
               {#if block.isConflict}
-                <Badge variant="conflict">Conflict</Badge>
+                <span class="sr-only">Conflict</span>
               {/if}
             </div>
             {#if block.session.room}
@@ -215,12 +194,16 @@
                 <span class="gb-location-text">{block.session.room}</span>
               </span>
             {/if}
-            {#each block.course.lecturers as lecturer, lecturerIndex (lecturerIndex)}
-              <span class="gb-owner" title={lecturer}>
+            {#if block.course.lecturers.length > 0}
+              {@const firstLecturer = block.course.lecturers[0]}
+              {@const extraLecturers = block.course.lecturers.length - 1}
+              <span class="gb-owner" title={block.course.lecturers.join(' · ')}>
                 <User class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                <span class="gb-owner-text">{lecturer}</span>
+                <span class="gb-owner-text">
+                  {firstLecturer}{extraLecturers > 0 ? ` +${extraLecturers}` : ''}
+                </span>
               </span>
-            {/each}
+            {/if}
           </div>
         {/each}
       </div>
@@ -328,7 +311,7 @@
   }
 
   .block.is-conflict {
-    outline: 3px solid var(--primary-foreground);
+    outline: 3px solid var(--destructive);
     outline-offset: -3px;
   }
 
@@ -386,7 +369,6 @@
     font-weight: 500;
     line-height: 1.2;
     white-space: nowrap;
-    opacity: 0.9;
   }
 
   .gb-location-text,

@@ -1,30 +1,32 @@
 <script lang="ts">
   import { onDestroy, onMount, tick, untrack } from 'svelte'
   import { Dialog } from 'bits-ui'
-  import { Plus, TriangleAlert, X } from 'lucide-svelte'
-  import { courseWarnings, planConflictDetails, planConflicts } from '../../../domain/conflicts'
+  import { X } from 'lucide-svelte'
+  import { planConflictDetails, planConflicts } from '../../../domain/conflicts'
   import { exportPlanPng } from '../../../domain/exportPng'
   import {
     DEFAULT_PLAN_FILTER,
+    courseCredits,
     creditValues as domainCreditValues,
-    filterPlanOptions,
-    groupPlanOptions,
+    filterActive,
     planTimeRange,
-    sortPlanOptions,
   } from '../../../domain/filters'
-  import type { PlanFilter, PlanOption, SubjectGroup } from '../../../domain/filters'
+  import type { PlanFilter } from '../../../domain/filters'
   import { planCourses } from '../../../domain/plan'
   import type { PlanContext } from '../../../domain/plan'
-  import { sectionId } from '../../../domain/section'
-  import type { CohortId, Course, PlanCourse, Term, TermId } from '../../../domain/types'
-  import { COHORT_TABS } from '../../../state/route.svelte'
-import type { GenedStateStore } from '../../../state/gened.svelte'
+  import { buildPickerOptions, selectPickerGroups, splitGroupsByCategory } from '../../../domain/planOptions'
+  import type { PickerOption } from '../../../domain/planOptions'
+  import { parseSectionId } from '../../../domain/section'
+  import type { CohortId, PlanCourse, Term, TermId } from '../../../domain/types'
+  import type { GenedStateStore } from '../../../state/gened.svelte'
   import type { PlanState } from '../../../state/plan.svelte'
-  import { cn } from '$lib/utils'
+  import { Input } from '$lib/components/ui/input'
   import Badge from '$lib/components/ui/badge/badge.svelte'
   import Button from '../ui/button/button.svelte'
+  import Legend from '../week/Legend.svelte'
   import WeekGrid from '../week/WeekGrid.svelte'
   import PlanFilterControls from './PlanFilterControls.svelte'
+  import PlanPickerResults from './PlanPickerResults.svelte'
 
   interface Props {
     terms: Term[]
@@ -33,25 +35,6 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
     plan: PlanState
     gened: GenedStateStore
     onCohortChange?: (cohort: CohortId) => void
-  }
-
-  interface PickerOption extends PlanOption<Course> {
-    sectionNumber: string
-    cohort?: CohortId
-  }
-
-  interface PickerSection extends PickerOption {
-    warnings: string[]
-  }
-
-  interface PickerSubject extends SubjectGroup<PickerOption> {
-    items: PickerSection[]
-  }
-
-  interface PickerGroup {
-    key: string
-    label: string
-    subjects: PickerSubject[]
   }
 
   let { terms, termId, cohort, plan, gened, onCohortChange }: Props = $props()
@@ -70,6 +53,7 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
   )
   const range = $derived(planTimeRange(courses))
   const unresolved = $derived(plan.unresolved(termId, context))
+  const unresolvedEntries = $derived(plan.unresolvedEntries(termId, context))
   const genedState = $derived(gened.stateFor(termId))
   const genedCourses = $derived(gened.coursesFor(termId))
   const genedGroupLabel = $derived(
@@ -78,24 +62,39 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
       : 'Gen Ed',
   )
   const inPlanCodes = $derived(new Set(courses.map((course) => course.code)))
+  const CREDIT_LIMIT = 22
+  const creditTotal = $derived(
+    courses.reduce(
+      (sum, course) => (course.planRole === 'TA' ? sum : sum + (courseCredits(course) ?? 0)),
+      0,
+    ),
+  )
+  const overCredit = $derived(creditTotal > CREDIT_LIMIT)
 
   let search = $state('')
   let filter = $state<PlanFilter>({ ...DEFAULT_PLAN_FILTER, days: [] })
   let isMobile = $state(false)
-  let mobileFiltersOpen = $state(false)
-  let clearArmed = $state(false)
+  let filtersOpen = $state(false)
+  let clearTerm = $state<TermId | null>(null)
   let exporting = $state(false)
+  let exportError = $state('')
+  let conflictsOpen = $state(false)
   let announcement = $state('')
   let searchInput = $state<HTMLInputElement | null>(null)
+  let resultsEl = $state<HTMLDivElement | null>(null)
   let filtersAnchor = $state<HTMLDivElement | null>(null)
   let calendarEl = $state<HTMLDivElement | null>(null)
   let railMax = $state(0)
   let clearTimer: ReturnType<typeof setTimeout> | null = null
+  const clearArmed = $derived(clearTerm === termId)
 
   $effect(() => {
     const id = termId
     untrack(() => {
       void gened.ensure(id)
+      clearTerm = null
+      if (clearTimer) clearTimeout(clearTimer)
+      clearTimer = null
     })
   })
 
@@ -126,86 +125,24 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
     if (clearTimer) clearTimeout(clearTimer)
   })
 
-  function optionSearch(option: PickerOption): string {
-    return [
-      option.course.name,
-      option.course.code,
-      option.sectionNumber,
-      ...option.course.lecturers,
-    ]
-      .join(' ')
-      .toLowerCase()
-  }
-
-  const baseOptions = $derived.by<PickerOption[]>(() => {
-    if (!term) return []
-    const out: PickerOption[] = []
-    if (selectedYear) {
-      for (const course of selectedYear.courses) {
-        if (inPlanCodes.has(course.code)) continue
-        const number = course.section ?? course.sections[0]?.number ?? ''
-        out.push({
-          course,
-          key: sectionId(termId, course.code, number),
-          badge: selectedYear.label,
-          group: selectedYear.id,
-          groupLabel: selectedYear.label,
-          sectionNumber: number,
-          cohort: selectedYear.id,
-        })
-      }
-    }
-    for (const course of genedCourses) {
-      if (inPlanCodes.has(course.code)) continue
-      const number = course.section || course.sections[0]?.number || ''
-      out.push({
-        course,
-        key: sectionId(termId, course.code, number),
-        badge: 'Gen Ed',
-        group: 'gened',
-        groupLabel: genedGroupLabel,
-        sectionNumber: number,
-      })
-    }
-    return out
-  })
+  const baseOptions = $derived(buildPickerOptions(term, cohort, genedCourses, inPlanCodes, genedGroupLabel))
 
   const creditValues = $derived(domainCreditValues(baseOptions))
 
-  const filteredOptions = $derived.by(() => {
-    const matched = filterPlanOptions(baseOptions, filter, courses)
-    const needle = search.trim().toLowerCase()
-    if (!needle) return matched
-    return matched.filter((option) => optionSearch(option).includes(needle))
-  })
+  const groups = $derived(
+    selectPickerGroups(
+      baseOptions,
+      filter,
+      search,
+      courses,
+      [
+        ...(selectedYear ? [{ key: selectedYear.id, label: selectedYear.label }] : []),
+        { key: 'gened', label: genedGroupLabel },
+      ],
+    ),
+  )
 
-  const groups = $derived.by<PickerGroup[]>(() => {
-    const order = [
-      ...(selectedYear ? [{ key: selectedYear.id, label: selectedYear.label }] : []),
-      { key: 'gened', label: genedGroupLabel },
-    ]
-    return order
-      .map((group) => {
-        const options = filteredOptions.filter((option) => option.group === group.key)
-        const subjects = groupPlanOptions(options)
-        const byKey = new Map(subjects.map((subject) => [subject.options[0]?.key ?? '', subject]))
-        const cards = sortPlanOptions(
-          subjects.map((subject) => subject.options[0]!).filter(Boolean),
-          filter.sort,
-        )
-          .map((option) => byKey.get(option.key))
-          .filter((subject): subject is SubjectGroup<PickerOption> => Boolean(subject))
-          .map((subject) => ({
-            ...subject,
-            items: subject.options.map((option) => ({
-              ...option,
-              warnings: courseWarnings(option.course, courses),
-            })),
-          }))
-        return { ...group, subjects: cards }
-      })
-      .filter((group) => group.subjects.length > 0)
-  })
+  const displayGroups = $derived(splitGroupsByCategory(groups))
 
   function announce(): void {
     const list = planCourses(termId, plan.entries, context)
@@ -217,16 +154,33 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
         : state?.status === 'error'
           ? ' Gen Ed courses unavailable.'
           : ''
+    const saveSuffix =
+      plan.saveStatus === 'memory-only' ? ' Changes are not saved to this browser.' : ''
+    const creditSuffix = creditTotal > CREDIT_LIMIT
+      ? ` Credits exceed the ${CREDIT_LIMIT}-credit limit: ${creditTotal} credits.`
+      : ''
     announcement =
       `Plan updated: ${list.length} ${list.length === 1 ? 'course' : 'courses'}, ` +
-      `${conflicts.length} ${conflicts.length === 1 ? 'conflict' : 'conflicts'}.${suffix}`
+      `${conflicts.length} ${conflicts.length === 1 ? 'conflict' : 'conflicts'}.${suffix}${saveSuffix}${creditSuffix}`
+  }
+
+  async function focusNextAdd(): Promise<void> {
+    await tick()
+    const first = resultsEl?.querySelector<HTMLButtonElement>('button[aria-label^="Add "]')
+    if (first) {
+      if (typeof first.scrollIntoView === 'function') {
+        first.scrollIntoView({ block: 'nearest' })
+      }
+      first.focus()
+      return
+    }
+    searchInput?.focus()
   }
 
   async function addOption(option: PickerOption): Promise<void> {
     plan.add(termId, option.key, 'take', option.cohort)
     announce()
-    await tick()
-    searchInput?.focus()
+    await focusNextAdd()
   }
 
   async function removeCourse(course: PlanCourse): Promise<void> {
@@ -261,31 +215,39 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
   }
 
   async function clearPlan(): Promise<void> {
-    if (!clearArmed) {
-      clearArmed = true
+    if (clearTerm !== termId) {
+      clearTerm = termId
       if (clearTimer) clearTimeout(clearTimer)
       clearTimer = setTimeout(() => {
-        clearArmed = false
+        clearTerm = null
         clearTimer = null
       }, 5000)
       return
     }
     if (clearTimer) clearTimeout(clearTimer)
     clearTimer = null
-    clearArmed = false
+    clearTerm = null
     plan.clear(termId)
     announce()
     await tick()
     searchInput?.focus()
   }
 
+  async function removeUnresolved(entry: { sectionId: string }): Promise<void> {
+    plan.remove(termId, entry.sectionId)
+    announce()
+  }
+
   async function downloadPng(): Promise<void> {
     if (courses.length === 0) return
     exporting = true
+    exportError = ''
     try {
       await exportPlanPng(courses, term?.label ?? '', { termId })
+      announcement = 'Plan PNG downloaded.'
     } catch (error) {
-      announcement = `PNG export failed: ${error instanceof Error ? error.message : String(error)}`
+      exportError = `PNG export failed: ${error instanceof Error ? error.message : String(error)}`
+      announcement = exportError
     } finally {
       exporting = false
     }
@@ -307,57 +269,80 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
         <h2 class="text-base font-semibold leading-tight">My plan · {term.label}</h2>
         <p class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span>{courses.length} {courses.length === 1 ? 'course' : 'courses'}</span>
+          <span aria-live="polite">
+            {creditTotal} / {CREDIT_LIMIT} credits
+          </span>
+          {#if overCredit}
+            <Badge variant="destructive">Credit overflow</Badge>
+          {/if}
           {#if conflictLabels.length > 0}
-            <span
-              class="rounded-full bg-destructive px-2 py-0.5 text-[0.65rem] font-semibold text-destructive-foreground"
-              title={conflictLabels.join(' · ')}
+            <button
+              type="button"
+              class="rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground"
+              aria-expanded={conflictsOpen}
+              onclick={() => (conflictsOpen = !conflictsOpen)}
             >
               {conflictLabels.length} {conflictLabels.length === 1 ? 'conflict' : 'conflicts'}
-            </span>
-            <span class="sr-only">{conflictLabels.join('. ')}</span>
+            </button>
           {:else}
             <span>0 conflicts</span>
           {/if}
         </p>
       </div>
       <div class="ml-auto flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" class="min-h-11 min-[901px]:min-h-8" disabled={courses.length === 0 || exporting} onclick={downloadPng}>Download PNG</Button>
+        <Button type="button" variant="outline" size="sm" class="min-h-11 min-[901px]:min-h-8" disabled={courses.length === 0 || exporting} onclick={downloadPng}>{exporting ? 'Exporting…' : 'Download PNG'}</Button>
         <Button type="button" variant={clearArmed ? 'destructive' : 'outline'} size="sm" class="min-h-11 min-[901px]:min-h-8" aria-pressed={clearArmed} onclick={clearPlan}>{clearArmed ? 'Click again to clear' : 'Clear term'}</Button>
       </div>
     </header>
 
-    <div class="grid min-h-0 flex-1 gap-4 min-[901px]:grid-cols-[minmax(0,1fr)_360px] min-[901px]:items-stretch">
-      <div class="min-h-0 min-w-0" bind:this={calendarEl}>
-        <WeekGrid
-          {courses}
-          range={range}
-          conflictKeys={conflictKeys}
-          taKeys={taKeys}
-          fill
-        />
+    {#if exportError}
+      <p class="text-xs text-destructive" role="alert">{exportError}</p>
+    {/if}
+
+    {#if plan.saveStatus === 'memory-only'}
+      <div class="flex flex-wrap items-center gap-2 text-xs text-destructive" role="alert">
+        <span>Plan changes are not saved to this browser.</span>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          class="min-h-11 min-[901px]:min-h-8"
+          onclick={() => plan.retrySave()}
+        >
+          Retry save
+        </Button>
+      </div>
+    {/if}
+
+    {#if conflictsOpen && conflictLabels.length > 0}
+      <ul class="shrink-0 space-y-0.5 text-xs text-destructive">
+        {#each conflictLabels as label (label)}
+          <li>{label}</li>
+        {/each}
+      </ul>
+    {/if}
+
+    <div class="grid min-h-0 flex-1 gap-4 min-[901px]:grid-cols-[minmax(0,1fr)_400px] min-[901px]:items-stretch">
+      <div class="flex min-h-0 min-w-0 flex-col">
+        <Legend />
+        <div class="min-h-0 flex-1" bind:this={calendarEl}>
+          <WeekGrid
+            {courses}
+            {range}
+            {conflictKeys}
+            {taKeys}
+            fill
+          />
+        </div>
       </div>
 
       <aside
-        class="min-w-0 space-y-4 min-[901px]:sticky min-[901px]:top-4 min-[901px]:overflow-y-auto min-[901px]:rounded-xl min-[901px]:border min-[901px]:bg-card min-[901px]:p-3"
+        class="min-w-0 space-y-2 min-[901px]:sticky min-[901px]:top-4 min-[901px]:overflow-y-auto min-[901px]:rounded-xl min-[901px]:border min-[901px]:bg-card min-[901px]:p-3"
         style={!isMobile && railMax > 0 ? `max-height: ${railMax}px` : undefined}
         aria-label="Plan courses"
       >
-        <div class="flex items-center justify-between gap-2">
-          <label for="plan-year" class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Year</label>
-          <select
-            id="plan-year"
-            class="min-h-11 rounded-lg border bg-background px-2 text-sm text-foreground min-[901px]:min-h-8"
-            value={cohort}
-            onchange={(event) => onCohortChange?.(event.currentTarget.value as CohortId)}
-          >
-            {#each COHORT_TABS as tab (tab.id)}
-              <option value={tab.id}>{tab.label}</option>
-            {/each}
-          </select>
-        </div>
-
         <section aria-label="In this plan">
-          <h3 class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+          <h3 class="text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">
             In this plan
           </h3>
           {#if courses.length === 0}
@@ -365,15 +350,10 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
           {:else}
             <ul class="mt-1">
               {#each courses as course (course.sectionId)}
-                <li class="flex items-center gap-2 border-t py-2" data-plan-entry={course.sectionId}>
-                  <span
-                    class="shrink-0 rounded border px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
-                  >
-                    {course.planYear}
-                  </span>
-                  <span class="min-w-0 flex-1 truncate text-sm font-semibold">
+                <li class="flex items-center gap-2 border-t py-1.5" data-plan-entry={course.sectionId}>
+                  <span class="min-w-0 flex-1 truncate text-xs font-semibold">
                     {course.name}
-                    <span class="text-xs font-normal text-muted-foreground">
+                    <span class="font-normal text-muted-foreground">
                       · {course.code}{#if course.section} · Sec {course.section}{/if}
                     </span>
                   </span>
@@ -404,21 +384,43 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
               {/each}
             </ul>
           {/if}
-          {#if unresolved > 0}
+          {#if unresolvedEntries.length > 0}
             <p class="mt-2 text-xs text-muted-foreground">
               {unresolved} saved {unresolved === 1 ? 'course is' : 'courses are'} not offered in this
               Gen Ed list.
             </p>
+            <ul class="mt-1">
+              {#each unresolvedEntries as entry (entry.sectionId)}
+                {@const parsed = parseSectionId(entry.sectionId)}
+                <li class="flex items-center gap-2 border-t py-1.5 text-xs text-muted-foreground">
+                  <span class="min-w-0 flex-1 truncate">
+                    {parsed?.code ?? entry.sectionId}{parsed?.number ? ` · Sec ${parsed.number}` : ''}
+                  </span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    class="size-11 shrink-0 min-[901px]:size-8"
+                    aria-label={`Remove ${parsed?.code ?? entry.sectionId} from plan`}
+                    onclick={() => removeUnresolved(entry)}
+                  >
+                    <X class="size-4" aria-hidden="true" />
+                  </Button>
+                </li>
+              {/each}
+            </ul>
           {/if}
         </section>
 
-        <section aria-label="Add a course" class="border-t pt-3">
-          <h3 class="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        <section aria-label="Add a course" class="border-t pt-2">
+          <h3 class="text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">
             Add a course
           </h3>
-          <p class="mt-1 text-xs text-muted-foreground" aria-live="polite">
-            {gened.statusText(termId)}
-          </p>
+          {#if genedState?.status !== 'ready' || genedState?.refreshing || gened.hasError(termId)}
+            <p class="mt-1 text-xs text-muted-foreground" aria-live="polite">
+              {gened.statusText(termId)}
+            </p>
+          {/if}
           {#if gened.hasError(termId)}
             <Button
               type="button"
@@ -431,151 +433,75 @@ import type { GenedStateStore } from '../../../state/gened.svelte'
             </Button>
           {/if}
 
-          <input
-            type="search"
-            bind:value={search}
-            bind:this={searchInput}
-            placeholder="Search course, code, lecturer, section"
-            aria-label={`Search ${term.label} plan courses to add`}
-            class="mt-2 min-h-11 w-full rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground min-[901px]:min-h-9"
-          />
-
-          {#if isMobile}
-            <div class="mt-2" bind:this={filtersAnchor}>
+          <div class="mt-2 flex gap-2">
+            <Input
+              type="search"
+              bind:value={search}
+              bind:ref={searchInput}
+              placeholder="Search course, code, lecturer, section"
+              aria-label={`Search ${term.label} plan courses to add`}
+              class="min-w-0 flex-1"
+            />
+            <div class="shrink-0" bind:this={filtersAnchor}>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                class="min-h-11 w-full"
-                onclick={() => (mobileFiltersOpen = true)}
+                class="min-h-11 whitespace-nowrap min-[901px]:min-h-10"
+                aria-haspopup="dialog"
+                onclick={() => (filtersOpen = true)}
               >
-                Filters
+                Filters{filterActive(filter) ? ' · active' : ''}
               </Button>
             </div>
+          </div>
 
-            <Dialog.Root bind:open={mobileFiltersOpen} onOpenChangeComplete={closeFilters}>
-              <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 z-40 bg-foreground/40" />
-                <Dialog.Content
-                  class="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl border bg-card p-4 text-card-foreground shadow-popover"
-                >
-                  <div class="flex items-center justify-between gap-3">
-                    <Dialog.Title class="text-sm font-semibold">Filters</Dialog.Title>
-                    <Dialog.Close
-                      class="min-h-11 rounded-md border bg-card px-3 text-xs font-medium text-foreground"
-                    >
-                      Done
-                    </Dialog.Close>
-                  </div>
-                  <Dialog.Description class="mt-1 text-xs text-muted-foreground">
-                    Narrow the course list by day, credits, conflicts, or sort order.
-                  </Dialog.Description>
-                  <div class="mt-3">
-                    <PlanFilterControls
-                      {filter}
-                      {creditValues}
-                      onchange={changeFilter}
-                      onclear={clearFilters}
-                    />
-                  </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-          {:else}
-            <div class="mt-2">
-              <PlanFilterControls
-                {filter}
-                {creditValues}
-                onchange={changeFilter}
-                onclear={clearFilters}
-              />
-            </div>
-          {/if}
-
-          {#if filteredOptions.length === 0}
-            <p class="mt-3 text-sm text-muted-foreground">No courses match the filters.</p>
-          {:else}
-            {#each groups as group (group.key)}
-              <h4
-                class="mt-3 text-[0.66rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
+          <Dialog.Root bind:open={filtersOpen} onOpenChangeComplete={closeFilters}>
+            <Dialog.Portal>
+              <Dialog.Overlay class="fixed inset-0 z-40 bg-foreground/40" />
+              <Dialog.Content
+                class="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl border bg-card p-4 text-card-foreground shadow-popover min-[901px]:inset-x-auto min-[901px]:bottom-auto min-[901px]:left-1/2 min-[901px]:top-1/2 min-[901px]:w-[26rem] min-[901px]:-translate-x-1/2 min-[901px]:-translate-y-1/2 min-[901px]:rounded-2xl"
               >
-                {group.label}
-              </h4>
-              <ul class="mt-1">
-                {#each group.subjects as subject (subject.code)}
-                  <li class="border-t py-3">
-                    <div class="flex min-w-0 items-center gap-2">
-                      <Badge variant="secondary" class="shrink-0 text-[0.6rem]">
-                        {subject.items[0]?.badge}
-                      </Badge>
-                      <span class="truncate text-sm font-semibold">{subject.name}</span>
-                      <span class="ml-auto shrink-0 text-xs text-muted-foreground">
-                        {subject.code}{subject.items[0]?.course.credits
-                          ? ` · ${subject.items[0].course.credits}`
-                          : ''}
-                      </span>
-                    </div>
-                    <div class="mt-2 space-y-1">
-                      {#each subject.items as option (option.key)}
-                        <div
-                          class={cn(
-                            'relative rounded-lg border-l-[3px] bg-muted/40 p-2 pr-12',
-                            option.warnings.length > 0
-                              ? 'border-l-destructive'
-                              : 'border-l-transparent',
-                          )}
-                          data-plan-option={option.key}
-                        >
-                          <div class="flex min-w-0 items-center gap-2">
-                            <Badge variant="outline" class="shrink-0 text-[0.6rem]">
-                              S{option.sectionNumber}
-                            </Badge>
-                            <span class="truncate text-xs text-muted-foreground">
-                              {option.course.sessions
-                                .map(
-                                  (session) =>
-                                    `${session.day} ${session.start}–${session.end}${session.room ? ` · ${session.room}` : ''}`,
-                                )
-                                .join(' / ')}
-                            </span>
-                          </div>
-                          {#if option.course.lecturers.length > 0}
-                            <p class="mt-0.5 truncate text-xs text-muted-foreground">
-                              {option.course.lecturers.join(' · ')}
-                            </p>
-                          {/if}
-                          <div class="min-h-4">
-                            {#if option.warnings.length > 0}
-                              <p
-                                class="flex min-w-0 items-center gap-1 text-xs text-destructive"
-                                title={option.warnings.join(' · ')}
-                              >
-                                <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
-                                <span class="truncate">
-                                  {option.warnings[0]}{option.warnings.length > 1
-                                    ? ` (+${option.warnings.length - 1} more)`
-                                    : ''}
-                                </span>
-                              </p>
-                            {/if}
-                          </div>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            class="absolute right-1 top-1/2 size-9 -translate-y-1/2"
-                            aria-label={`Add ${subject.name} section ${option.sectionNumber} to plan${option.warnings.length > 0 ? ', conflicts with the current plan' : ''}`}
-                            onclick={() => addOption(option)}
-                          >
-                            <Plus class="size-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      {/each}
-                    </div>
-                  </li>
-                {/each}
-              </ul>
-            {/each}
+                <div class="flex items-center justify-between gap-3">
+                  <Dialog.Title class="text-sm font-semibold">Filters</Dialog.Title>
+                  <Dialog.Close
+                    class="min-h-11 rounded-md border border-control-border bg-card px-3 text-xs font-medium text-foreground"
+                  >
+                    Done
+                  </Dialog.Close>
+                </div>
+                <Dialog.Description class="mt-1 text-xs text-muted-foreground">
+                  Narrow the course list by year, day, credits, conflicts, or sort order.
+                </Dialog.Description>
+                <div class="mt-3">
+                  <PlanFilterControls
+                    {filter}
+                    {creditValues}
+                    {cohort}
+                    onchange={changeFilter}
+                    onclear={clearFilters}
+                    onCohortChange={(next) => onCohortChange?.(next)}
+                  />
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+
+          {#if groups.length === 0}
+            <p class="mt-3 text-sm text-muted-foreground">No courses match the filters.</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              class="mt-1 min-h-11 min-[901px]:min-h-8"
+              onclick={clearFilters}
+            >
+              Clear search and filters
+            </Button>
+          {:else}
+            <div bind:this={resultsEl}>
+              <PlanPickerResults groups={displayGroups} onadd={addOption} />
+            </div>
           {/if}
         </section>
       </aside>

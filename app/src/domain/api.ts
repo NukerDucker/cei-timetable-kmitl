@@ -291,6 +291,7 @@ export function sessionsFromRows(rows: readonly ApiRow[]): Session[] {
   }
   const seen = new Set<string>()
   const unique = raw.filter((session) => {
+    if (!validTimeRange(session.start, session.end)) return false
     const key = [
       session.day,
       session.start,
@@ -357,6 +358,7 @@ export function examPatch(rows: readonly ApiRow[], curated: Exam = {}): Exam {
     lectures.find((item) => apiDate(item.midterm_start_date_time) || apiDate(item.final_start_date_time)) ??
     rows.find((item) => apiDate(item.midterm_start_date_time) || apiDate(item.final_start_date_time))
   const exams: Exam = { ...curated }
+  const legacyTime = exams.time
   if (!row) return exams
   const mid = apiDate(row.midterm_start_date_time)
   const final = apiDate(row.final_start_date_time)
@@ -365,14 +367,21 @@ export function examPatch(rows: readonly ApiRow[], curated: Exam = {}): Exam {
   if (mid) {
     exams.mid = mid.slice(0, 10)
     delete exams.midNote
+    exams.midTime = midEnd ? hhmm(mid.slice(11)) + '–' + hhmm(midEnd.slice(11)) : null
   }
   if (final) {
     exams.final = final.slice(0, 10)
     delete exams.finalNote
+    exams.finalTime = finalEnd ? hhmm(final.slice(11)) + '–' + hhmm(finalEnd.slice(11)) : null
   }
   const start = final ?? mid
   const end = final ? finalEnd : midEnd
   if (start && end) exams.time = hhmm(start.slice(11)) + '–' + hhmm(end.slice(11))
+  // A partial update must not leak the new shared time into the other kind.
+  if (exams.time !== legacyTime) {
+    if (exams.mid && exams.midTime === undefined) exams.midTime = legacyTime ?? null
+    if (exams.final && exams.finalTime === undefined) exams.finalTime = legacyTime ?? null
+  }
   return exams
 }
 
@@ -548,6 +557,17 @@ function isDay(value: string): value is Day {
   return (DAY_ORDER as readonly string[]).includes(value)
 }
 
+/** `HH:mm`; `24:00` is valid only as an interval end. */
+export function isClock(value: string, allowEnd = false): boolean {
+  if (allowEnd && value === '24:00') return true
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
+}
+
+/** Reject malformed or backwards session times at API and cache boundaries. */
+export function validTimeRange(start: string, end: string): boolean {
+  return isClock(start) && isClock(end, true) && minutes(end) > minutes(start)
+}
+
 function isCohortId(value: string): value is CohortId {
   return value === 'y1' || value === 'y2' || value === 'y3' || value === 'y4'
 }
@@ -556,10 +576,13 @@ function normalizeSession(value: unknown): Session | null {
   if (!isRecord(value)) return null
   const day = asString(value.day)
   if (!isDay(day)) return null
+  const start = asString(value.start)
+  const end = asString(value.end)
+  if (!validTimeRange(start, end)) return null
   return {
     day,
-    start: asString(value.start),
-    end: asString(value.end),
+    start,
+    end,
     room: asNullableString(value.room),
     section: asString(value.section),
     ...(value.type === 'lab' ? { type: 'lab' as const } : {}),
@@ -576,6 +599,12 @@ function normalizeExam(value: unknown): Exam {
   if (typeof value.midRoom === 'string') exam.midRoom = value.midRoom
   if (typeof value.finalRoom === 'string') exam.finalRoom = value.finalRoom
   if (typeof value.time === 'string') exam.time = value.time
+  if ('midTime' in value) {
+    exam.midTime = typeof value.midTime === 'string' ? value.midTime : null
+  }
+  if ('finalTime' in value) {
+    exam.finalTime = typeof value.finalTime === 'string' ? value.finalTime : null
+  }
   return exam
 }
 
@@ -690,13 +719,18 @@ export function readTermCache(storage: StorageLike | null = browserStorage()): T
   const raw = readStorageJson(storage, CACHE_KEY)
   if (!isRecord(raw) || raw.v !== 3 || !Array.isArray(raw.terms)) return null
   if (raw.terms.length !== CURATED_TERMS.length) return null
+  const expectedIds = new Set(TERM_CONFIG.map((config) => config.id))
+  const seen = new Set<string>()
   const terms: Term[] = []
   for (const rawTerm of raw.terms) {
     const term = normalizeCachedTerm(rawTerm)
     if (!term) return null
+    if (!expectedIds.has(term.id) || seen.has(term.id)) return null
+    seen.add(term.id)
     terms.push(term)
   }
-  return { v: 3, savedAt: typeof raw.savedAt === 'number' ? raw.savedAt : 0, terms }
+  const savedAt = Number.isFinite(raw.savedAt) ? (raw.savedAt as number) : 0
+  return { v: 3, savedAt, terms }
 }
 
 export function writeTermCache(

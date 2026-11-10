@@ -56,7 +56,8 @@ export class GenedStateStore {
   }
 
   hasError(term: TermId): boolean {
-    return this.states[term]?.status === 'error'
+    const state = this.states[term]
+    return state?.status === 'error' || (state?.status === 'ready' && Boolean(state.error))
   }
 
   statusText(term: TermId): string {
@@ -64,6 +65,9 @@ export class GenedStateStore {
     if (!state || state.status === 'idle') return 'Gen Ed courses load with the plan.'
     if (state.status === 'loading') return 'Loading Gen Ed courses…'
     if (state.status === 'error') return 'Gen Ed courses unavailable.'
+    if (state.error) {
+      return `Gen Ed · ${state.courses.length} courses · refresh failed, showing saved data`
+    }
     if (state.refreshing) {
       return `Gen Ed · ${state.courses.length} courses · refreshing…`
     }
@@ -113,7 +117,9 @@ export class GenedStateStore {
   retry(term: TermId): Promise<void> {
     const state = this.states[term]
     if (state?.status === 'ready') {
-      this.#set(term, { ...state, savedAt: 0, refreshing: false })
+      const next: GenEdState = { ...state, savedAt: 0, refreshing: false }
+      delete next.error
+      this.#set(term, next)
     }
     return this.ensure(term)
   }

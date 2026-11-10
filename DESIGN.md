@@ -253,11 +253,13 @@ Course bars use a fixed category palette that sits outside the accents above. It
 
 | Category | Base | Four deterministic shades | Text |
 |---|---|---|---|
-| Core | `#0f76d6` | `#0f76d6` `#0c63b4` `#0a559c` `#0e6cc4` | white |
-| CEI Elective | `#6b50f0` | `#6b50f0` `#5a3ed6` `#4b32b8` `#6346e0` | white |
-| Gen Ed | `#0a6e7a` | `#0a6e7a` `#085c66` `#0b7e8c` `#064e56` | white |
+| Core | `#1462b8` | `#1462b8` `#1155a2` `#0e488a` `#196fcb` | white |
+| CEI Elective | `#9c27b0` | `#9c27b0` `#872197` `#721b7e` `#ab35c0` | white |
+| Gen Ed | `#2e7d32` | `#2e7d32` `#276b2a` `#205823` `#30823a` | white |
 
 Rules: white text on every shade (all pairs ≥ 4.58:1); a course keeps its shade by a stable hash of its code; category is never colour alone (each bar carries a text tag); labs inherit their parent course's category. Orange is brand and primary action only, never a category or status.
+
+Precedence: the shipped UI follows the runtime tokens in `app/src/app.css` and the rules in this `od:keep` block; generated aspirational sections elsewhere in this file do not override them.
 
 Runtime truth: the app keeps `#c94e17` with white text in both light and dark modes (4.58:1). The generated dark button shade (`#DC5D28` with dark text) is not used. Category and accent tokens project into `app/src/app.css` as `--cat-*` and `--primary`.
 <!-- /od:keep -->
@@ -549,7 +551,7 @@ House standards v4: 291 rules followed in this project, plus 1 of your own.
 - Never disable pinch zoom (STD-accessibility-motion-27).
 
 **Project standards** (from sources the owner chose)
-- Course category colours are a fixed CEI extension: core #0f76d6, elective #6b50f0, gened #0a6e7a, each with four deterministic shades. Use them only on course bars, with white text and a text category tag; never for chrome or status. Values: core `#0f76d6`, elective `#6b50f0`, gened `#0a6e7a`, text `#ffffff`. (PRJ-01)
+- Course category colours are a fixed CEI extension: core #1462b8, elective #9c27b0, gened #2e7d32, each with four deterministic shades. Use them only on course bars, with white text and a text category tag; never for chrome or status. Values: core `#1462b8`, elective `#9c27b0`, gened `#2e7d32`, text `#ffffff`. (PRJ-01)
 
 <details><summary>Every theme (227 rules)</summary>
 

@@ -1,5 +1,6 @@
 import {
   API_PATH,
+  TERM_CONFIG,
   fetchJson,
   flattenRows,
   makeCourse,
@@ -12,7 +13,7 @@ import type { GenEdCourse, GenEdState, StorageLike, TermConfig, TermId } from '.
 
 export const GENED_CACHE_KEY = 'cei-gened-cache-v2'
 export const GENED_TTL = 6 * 60 * 60 * 1000
-export const GENED_TERM_IDS: readonly TermId[] = ['t1', 't2']
+export const GENED_TERM_IDS: readonly TermId[] = TERM_CONFIG.map((config) => config.id)
 export const GENED_OWNER_ID = '48'
 
 function asString(value: unknown): string {
@@ -201,17 +202,15 @@ async function fetchGened(
   const hadData = previous.status === 'ready' && previous.courses.length > 0
   try {
     const payload = await request(genedUrl(config), { timeoutMs: 30000 })
+    if (!Array.isArray(payload)) throw new Error('Malformed GenEd response')
     const courses = genedCoursesFromRows(flattenRows(payload, false), { termId })
     const next: GenEdState = { status: 'ready', courses, savedAt: now() }
     writeGenedCache(storage, { [termId]: next })
     return next
   } catch (error) {
-    if (hadData) return { ...previous, refreshing: false }
-    return {
-      status: 'error',
-      courses: [],
-      error: error instanceof Error ? error.message : String(error),
-    }
+    const message = error instanceof Error ? error.message : String(error)
+    if (hadData) return { ...previous, refreshing: false, error: message }
+    return { status: 'error', courses: [], error: message }
   }
 }
 

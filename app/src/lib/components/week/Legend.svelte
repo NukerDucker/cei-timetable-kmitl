@@ -1,12 +1,13 @@
 <script lang="ts">
-  const ITEMS: readonly { category: 'core' | 'elective' | 'gened'; label: string }[] = [
+  const ITEMS: readonly { category: 'core' | 'elective' | 'gened' | 'conflict'; label: string }[] = [
     { category: 'core', label: 'Core' },
     { category: 'elective', label: 'CEI elective' },
     { category: 'gened', label: 'Gen Ed' },
+    { category: 'conflict', label: 'Red = conflict' },
   ]
 </script>
 
-<div class="legend" role="group" aria-label="Course category legend">
+<div class="legend" role="group" aria-label="Course category and conflict legend">
   {#each ITEMS as item (item.category)}
     <span class="legend-item">
       <i class="legend-swatch" data-category={item.category} aria-hidden="true"></i>
@@ -47,5 +48,11 @@
 
   .legend-swatch[data-category='gened'] {
     background: var(--cat-gened);
+  }
+
+  .legend-swatch[data-category='conflict'] {
+    background: transparent;
+    border: 2px solid var(--destructive);
+    border-radius: 2px;
   }
 </style>

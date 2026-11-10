@@ -1,6 +1,7 @@
 import { courseColorToken } from './categories'
 import { planTimeRange } from './filters'
 import { DAYS, SLOT, fmtTime, toMin } from './time'
+import { placeDaySessions } from './weekLayout'
 import type { PlanCourse } from './types'
 
 /**
@@ -16,7 +17,7 @@ const DEFAULT_THEME: Record<string, string> = {
   '--foreground': '#1c1c1e',
   '--muted-foreground': '#636366',
   '--border': '#d1d1d6',
-  '--cat-core': '#0f76d6',
+  '--cat-core': '#1462b8',
 }
 
 const SANS = "'IBM Plex Sans Thai', Arial, sans-serif"
@@ -140,32 +141,19 @@ export function drawPlanCanvas(
   })
 
   days.forEach((day, dayIndex) => {
-    const daySessions: Array<{ course: PlanCourse; session: PlanCourse['sessions'][number] }> = []
-    courses.forEach((course) =>
-      course.sessions.forEach((session) => {
-        if (session.day === day) daySessions.push({ course, session })
-      }),
-    )
-    daySessions.sort((a, b) => toMin(a.session.start) - toMin(b.session.start))
-    const laneEnds: number[] = []
-    const placed = daySessions.map((entry) => {
-      let lane = laneEnds.findIndex((end) => end <= toMin(entry.session.start))
-      if (lane === -1) {
-        lane = laneEnds.length
-        laneEnds.push(0)
-      }
-      laneEnds[lane] = toMin(entry.session.end)
-      return { ...entry, lane }
-    })
-    const lanes = Math.max(1, laneEnds.length)
-    placed.forEach(({ course, session, lane }) => {
+    const { items: placed, laneCount } = placeDaySessions(courses, day)
+    const lanes = Math.max(1, laneCount)
+    placed.forEach(({ course, session, lane, overlaps }) => {
       const startRow = (toMin(session.start) - startMin) / SLOT
       const span = (toMin(session.end) - toMin(session.start)) / SLOT
-      const boxWidth = (colW - 6) / lanes
-      const x = gridX + colW * dayIndex + 3 + boxWidth * lane
+      const isolated = overlaps <= 1
+      const boxWidth = isolated ? colW - 6 : (colW - 6) / lanes
+      const x = isolated
+        ? gridX + colW * dayIndex + 3
+        : gridX + colW * dayIndex + 3 + boxWidth * lane
       const y = gridY + startRow * slotH + 2
       const boxHeight = Math.max(slotH - 4, span * slotH - 4)
-      ctx.fillStyle = token(`--${courseColorToken(course)}`) || token('--cat-core') || '#0f76d6'
+      ctx.fillStyle = token(`--${courseColorToken(course)}`) || token('--cat-core') || '#1462b8'
       if (typeof ctx.roundRect === 'function') {
         ctx.beginPath()
         ctx.roundRect(x, y, boxWidth, boxHeight, 7)
@@ -232,7 +220,7 @@ export async function exportPlanPng(
   options: ExportPlanOptions,
 ): Promise<boolean> {
   const blob = await createPlanPng(courses, termLabel, options)
-  if (!blob) return false
+  if (!blob) throw new Error('PNG export produced no image data')
   const now = (options.now ?? (() => new Date()))()
   const filename = `cei-plan-${options.termId}-${now.toISOString().slice(0, 10)}.png`
   const download = options.download ?? defaultDownload(resolveDocument(options))

@@ -1,12 +1,13 @@
 import {
   clearPlanTerm,
   defaultPlanContext,
+  persistPlan,
   planCourses,
   readPlan,
   togglePlanEntry,
   togglePlanRole,
   unresolvedCount as domainUnresolvedCount,
-  writePlan,
+  unresolvedPlanEntries as domainUnresolvedPlanEntries,
 } from '../domain/plan'
 import type { PlanContext } from '../domain/plan'
 import { browserStorage } from '../domain/storage'
@@ -34,6 +35,8 @@ export interface PlanStateOptions {
  */
 export class PlanState {
   entries = $state<PlanEntry[]>([])
+  /** `memory-only` means the last write failed; the plan still works this session. */
+  saveStatus = $state<'saved' | 'memory-only'>('saved')
 
   #storage: StorageLike | null
   #context: () => PlanContext
@@ -49,7 +52,9 @@ export class PlanState {
 
     this.entries = readPlan(this.#storage, this.#context())
     // Promote a legacy v1 plan (and canonicalize ids) on first load.
-    writePlan(this.entries, this.#storage)
+    const result = persistPlan(this.entries, this.#storage)
+    this.entries = result.entries
+    this.saveStatus = result.saved ? 'saved' : 'memory-only'
   }
 
   entriesFor(term: TermId): PlanEntry[] {
@@ -101,8 +106,19 @@ export class PlanState {
     return domainUnresolvedCount(term, this.entries, context)
   }
 
+  unresolvedEntries(term: TermId, context: PlanContext = this.#context()): PlanEntry[] {
+    return domainUnresolvedPlanEntries(term, this.entries, context)
+  }
+
+  /** Retry the last failed write without changing entries. */
+  retrySave(): void {
+    this.#commit(this.entries)
+  }
+
   #commit(next: readonly PlanEntry[]): void {
-    this.entries = writePlan(next, this.#storage)
+    const result = persistPlan(next, this.#storage)
+    this.entries = result.entries
+    this.saveStatus = result.saved ? 'saved' : 'memory-only'
   }
 }
 

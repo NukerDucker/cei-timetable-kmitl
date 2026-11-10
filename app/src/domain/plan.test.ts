@@ -5,8 +5,10 @@ import {
   PLAN_KEY_V2,
   clearPlanTerm,
   planCourses,
+  persistPlan,
   readPlan,
   resolveLegacyKey,
+  resolvePlanEntry,
   togglePlanEntry,
   togglePlanRole,
   unresolvedCount,
@@ -241,5 +243,28 @@ describe('plan entry helpers', () => {
     expect(togglePlanEntry(added, 't1', 't1/01276111/905')).toHaveLength(1)
     expect(togglePlanRole(added, 't1', 't1/01276111/905')[0]?.role).toBe('ta')
     expect(clearPlanTerm(added, 't1')).toEqual([])
+  })
+})
+
+describe('plan entry resolution guards', () => {
+  it('rejects entries whose section id belongs to another term', () => {
+    const term = terms.find((candidate) => candidate.id === 't1')
+    expect(term).toBeDefined()
+    expect(
+      resolvePlanEntry(term!, { term: 't1', sectionId: 't2/01276111/905', role: 'take' }),
+    ).toBeNull()
+  })
+
+  it('reports storage failure instead of claiming a save', () => {
+    const storage = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('quota')
+      },
+      removeItem: () => undefined,
+    }
+    const result = persistPlan([{ term: 't1', sectionId: 't1/01276111/905', role: 'take' }], storage)
+    expect(result.entries).toHaveLength(1)
+    expect(result.saved).toBe(false)
   })
 })

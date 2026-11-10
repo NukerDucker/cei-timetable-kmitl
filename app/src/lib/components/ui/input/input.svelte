@@ -6,14 +6,16 @@
   type Props = HTMLInputAttributes & {
     variant?: InputVariants['variant']
     class?: string
+    ref?: HTMLInputElement | null
   }
 
   let {
     class: className = '',
     variant = 'default',
     value = $bindable(),
+    ref = $bindable(null),
     ...rest
   }: Props = $props()
 </script>
 
-<input bind:value class={cn(inputVariants({ variant }), className)} {...rest} />
+<input bind:this={ref} bind:value class={cn(inputVariants({ variant }), className)} {...rest} />

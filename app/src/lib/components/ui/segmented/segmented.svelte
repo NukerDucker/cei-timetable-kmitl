@@ -15,7 +15,7 @@
   let { items, value, label, onchange, onprefetch, class: className = '' }: Props = $props()
 
   const ITEM_CLASS =
-    'inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg px-3 text-[0.78rem] font-medium transition-colors sm:min-h-8 sm:px-2.5 sm:text-xs'
+    'inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg px-3 text-[0.78rem] font-medium transition-colors min-[901px]:min-h-8 min-[901px]:px-2.5 min-[901px]:text-xs'
 
   function itemClass(active: boolean): string {
     return cn(

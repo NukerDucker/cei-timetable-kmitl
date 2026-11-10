@@ -101,3 +101,34 @@ describe('PlanState', () => {
     })).toHaveLength(1)
   })
 })
+
+describe('save status', () => {
+  it('reports memory-only when writes fail and clears on retry', () => {
+    let fail = true
+    const data = new Map<string, string>()
+    const storage = {
+      getItem: (key: string) => data.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        if (fail) throw new Error('quota')
+        data.set(key, value)
+      },
+      removeItem: (key: string) => {
+        data.delete(key)
+      },
+    }
+    const state = createPlanState({ storage, context: () => ({ terms: [] }) })
+    expect(state.saveStatus).toBe('memory-only')
+
+    state.add('t1', 't1/A101/901')
+    expect(state.entries).toHaveLength(1)
+    expect(state.saveStatus).toBe('memory-only')
+
+    fail = false
+    state.retrySave()
+    expect(state.saveStatus).toBe('saved')
+    expect(JSON.parse(data.get('cei-plan-v2') ?? 'null')).toEqual({
+      v: 2,
+      entries: [{ term: 't1', sectionId: 't1/A101/901', role: 'take' }],
+    })
+  })
+})

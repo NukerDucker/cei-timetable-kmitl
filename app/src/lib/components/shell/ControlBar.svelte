@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import { Moon, Sun } from 'lucide-svelte'
+  import Button from '$lib/components/ui/button/button.svelte'
   import { Segmented } from '$lib/components/ui/segmented'
   import { COHORT_TABS, TERM_TABS } from '../../../state/route.svelte'
   import type { Route, RouteView } from '../../../state/route.svelte'
@@ -22,37 +22,19 @@
   ]
 
   const THEME_KEY = 'timetable-theme'
-  let dark = $state(false)
-
-  function applyTheme(): void {
-    if (typeof document === 'undefined') return
-    document.documentElement.classList.toggle('dark', dark)
-  }
+  const appliedDark =
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  let dark = $state(appliedDark)
 
   function toggleTheme(): void {
     dark = !dark
-    applyTheme()
+    document.documentElement.classList.toggle('dark', dark)
     try {
       localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light')
     } catch {
       // Storage unavailable (private mode); the in-memory choice still applies.
     }
   }
-
-  onMount(() => {
-    let saved: string | null = null
-    try {
-      saved = localStorage.getItem(THEME_KEY)
-    } catch {
-      saved = null
-    }
-    if (saved === 'light' || saved === 'dark') {
-      dark = saved === 'dark'
-    } else if (typeof window.matchMedia === 'function') {
-      dark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-    applyTheme()
-  })
 </script>
 
 <nav aria-label="Timetable controls" class="flex items-center gap-2">
@@ -72,9 +54,11 @@
     </div>
   </div>
 
-  <button
+  <Button
     type="button"
-    class="inline-flex size-11 shrink-0 items-center justify-center rounded-xl border bg-card text-foreground transition-colors hover:bg-muted/60 sm:size-9"
+    variant="outline"
+    size="icon"
+    class="size-11 shrink-0 rounded-xl min-[901px]:size-9"
     aria-label={dark ? 'Use light appearance' : 'Use dark appearance'}
     title={dark ? 'Use light appearance' : 'Use dark appearance'}
     onclick={toggleTheme}
@@ -84,7 +68,7 @@
     {:else}
       <Moon class="size-4" />
     {/if}
-  </button>
+  </Button>
 </nav>
 
 <style>

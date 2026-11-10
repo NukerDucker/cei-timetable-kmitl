@@ -4,10 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e9e6e1" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
     <meta name="description" content="KMITL Computer Engineering timetables and personal plan builder" />
     <title>CEI Schedule</title>
+    <script>
+      ;(() => {
+        let saved = null
+        try {
+          saved = localStorage.getItem('timetable-theme')
+        } catch {
+          saved = null
+        }
+        const dark =
+          saved === 'dark' ||
+          (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

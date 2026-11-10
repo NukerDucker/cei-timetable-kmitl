@@ -1319,15 +1319,15 @@
       {
         "id": "PRJ-01",
         "title": "CEI category palette",
-        "rule": "Course category colours are a fixed CEI extension: core #0f76d6, elective #6b50f0, gened #0a6e7a, each with four deterministic shades. Use them only on course bars, with white text and a text category tag; never for chrome or status.",
+        "rule": "Course category colours are a fixed CEI extension: core #1462b8, elective #9c27b0, gened #2e7d32, each with four deterministic shades. Use them only on course bars, with white text and a text category tag; never for chrome or status.",
         "why": "Returning users navigate by a stable course colour; the palette sits outside the three accent roles.",
         "authority": "non-negotiable",
         "strength": "must",
         "area": null,
         "values": {
-          "core": "#0f76d6",
-          "elective": "#6b50f0",
-          "gened": "#0a6e7a",
+          "core": "#1462b8",
+          "elective": "#9c27b0",
+          "gened": "#2e7d32",
           "text": "#ffffff"
         },
         "applies_to": [

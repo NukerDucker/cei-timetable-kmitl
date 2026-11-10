@@ -47,8 +47,8 @@
   }
 </script>
 
-<div class="flex h-dvh flex-col overflow-hidden bg-background text-foreground max-[900px]:h-auto max-[900px]:min-h-dvh max-[900px]:overflow-visible">
-  <header class="mx-auto w-full max-w-[1400px] px-3 pt-3 sm:px-4">
+<div class="flex h-dvh flex-col overflow-hidden bg-background text-foreground max-[900px]:h-auto max-[900px]:min-h-dvh max-[900px]:overflow-visible print:h-auto print:overflow-visible">
+  <header class="mx-auto w-full max-w-page px-3 pt-3 sm:px-4">
     <div class="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
       <Card class="col-span-2 p-4 md:col-span-1">
         <p class="text-eyebrow font-semibold uppercase tracking-eyebrow text-muted-foreground">
@@ -78,8 +78,8 @@
     </div>
   </header>
 
-  <div class="mx-auto flex min-h-0 w-full max-w-[1400px] flex-1 flex-col gap-3 px-3 pb-3 pt-3 sm:px-4">
-    <Card class="p-2">
+  <div class="mx-auto flex min-h-0 w-full max-w-page flex-1 flex-col gap-3 px-3 pb-3 pt-3 sm:px-4">
+    <Card class="p-2 print-hidden">
       <ControlBar
         route={route.current}
         onchange={(patch) => route.set(patch)}
@@ -122,7 +122,7 @@
           {/if}
 
           {#if cohort.notes.length > 0}
-            <details class="mt-3 border-t pt-2.5 text-[0.8125rem] text-muted-foreground">
+            <details class="mt-3 border-t pt-2.5 text-[0.8125rem] text-muted-foreground print-hidden">
               <summary class="flex min-h-11 cursor-pointer items-center font-medium text-foreground sm:min-h-8">
                 Notes on credits and exam arrangements
               </summary>

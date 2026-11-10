@@ -34,7 +34,11 @@ export interface Exam {
   finalNote?: string
   midRoom?: string
   finalRoom?: string
+  /** Legacy shared timing. Per-kind fields below override it when present. */
   time?: string
+  /** Per-kind timing; `null` suppresses the legacy fallback. */
+  midTime?: string | null
+  finalTime?: string | null
 }
 
 export interface Prereq {

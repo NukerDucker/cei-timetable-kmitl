@@ -34,7 +34,7 @@
     if (mid || final) {
       return `Mid ${examDateOrNote(mid, midNote)} · Final ${examDateOrNote(final, finalNote)}`
     }
-    return `Exams: ${midNote || 'By instructor'}`
+    return `Exams: ${midNote || finalNote || 'By instructor'}`
   })
 </script>
 

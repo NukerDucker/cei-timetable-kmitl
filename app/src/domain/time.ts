@@ -25,6 +25,12 @@ export function minutes(time: string): number {
   return toMin(time)
 }
 
+/** Strict `HH:mm` parser; returns null for malformed input (`24:00` is not a start). */
+export function parseTimeMinutes(value: string): number | null {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value.trim())
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null
+}
+
 export function fmtTime(minutesValue: number): string {
   return (
     String(Math.floor(minutesValue / 60)).padStart(2, '0') +

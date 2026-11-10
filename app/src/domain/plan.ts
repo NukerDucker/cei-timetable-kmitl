@@ -257,14 +257,27 @@ export function readPlan(
   return normalizeLegacyEntries(readStorageJson(storage, PLAN_KEY), context)
 }
 
+/** Persist the v2 plan. Returns the deduped entries and whether storage accepted them. */
+export interface PlanWriteResult {
+  entries: PlanEntry[]
+  saved: boolean
+}
+
+export function persistPlan(
+  entries: readonly PlanEntry[],
+  storage: StorageLike | null = browserStorage(),
+): PlanWriteResult {
+  const deduped = dedupe(entries)
+  const saved = writeStorageJson(storage, PLAN_KEY_V2, { v: 2, entries: deduped })
+  return { entries: deduped, saved }
+}
+
 /** Persist the v2 plan. Returns the deduped entries that were written. */
 export function writePlan(
   entries: readonly PlanEntry[],
   storage: StorageLike | null = browserStorage(),
 ): PlanEntry[] {
-  const deduped = dedupe(entries)
-  writeStorageJson(storage, PLAN_KEY_V2, { v: 2, entries: deduped })
-  return deduped
+  return persistPlan(entries, storage).entries
 }
 
 /** Legacy name retained for parity. */
@@ -317,6 +330,7 @@ export function resolvePlanEntry(
 ): ResolvedPlanEntry | null {
   const parsed = parseSectionId(entry.sectionId)
   if (!parsed || !parsed.number) return null
+  if (entry.term !== term.id || parsed.termId !== term.id) return null
   const found = findCourse(term, gened, parsed.code, parsed.number, entry.cohort)
   if (!found) return null
   return { entry, course: found.course, section: found.section, planYear: found.planYear }

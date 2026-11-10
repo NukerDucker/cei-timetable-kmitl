@@ -1,3 +1,4 @@
+import { examTimesOverlap } from './exams'
 import { fmtDate, toMin } from './time'
 import type { ConflictDetail, PlanCourse, ScheduledCourse } from './types'
 
@@ -38,7 +39,7 @@ export function planConflictDetails(courses: readonly PlanCourse[]): ConflictDet
         if (a.planRole === 'TA' || b.planRole === 'TA') break
         const day = a.exams[kind]
         if (!day || day !== b.exams[kind]) continue
-        if (a.exams.time && b.exams.time && a.exams.time !== b.exams.time) continue
+        if (!examTimesOverlap(a.exams, b.exams, kind)) continue
         out.push({
           kind: 'exam',
           a,
@@ -81,7 +82,7 @@ export function courseWarnings(
       if (course.planRole === 'TA' || other.planRole === 'TA') break
       const day = course.exams[kind]
       if (!day || !other.exams[kind] || day !== other.exams[kind]) continue
-      if (course.exams.time && other.exams.time && course.exams.time !== other.exams.time) continue
+      if (!examTimesOverlap(course.exams, other.exams, kind)) continue
       warnings.push(`${kind} exam ${fmtDate(day)} with ${other.name}`)
     }
   }
